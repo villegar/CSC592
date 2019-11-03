@@ -96,6 +96,14 @@ CountWhile          = 0;
 #local loops in serial, set to 0 to run cluster jobs
 local_version       = 0 ##ok<NOPTS>
 
+InitialCluster      = np.empty((0,NumberOfBands), dtype=float32)
+
+# L8_BA_R030_V4_Lat0030_Lon0006.tif (270)[793]
+def ind2sub(array_shape, ind):
+    rows = (ind.astype('int') / array_shape[0])
+    cols = (ind.astype('int') % array_shape[1]) # or numpy.mod(ind.astype('int'), array_shape[1])
+    return (rows, cols)
+
 while FlagCluster > 0:
     NumberOfClusters
     CountWhile      = CountWhile + 1 ##ok<NOPTS>
@@ -115,32 +123,37 @@ while FlagCluster > 0:
     ##ImageList       = glob.glob(ImageLocation + '/NorthAfrica/L8*')
     ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
     #y = rand.sample(range(1,len(ImageList)+1),NumberOfClusters)
-    y =  np.random.choice(len(ImageList),NumberOfClusters)
+    y = np.random.choice(len(ImageList),NumberOfClusters)
+    y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
     if override_init == 0:
 
-        for i in range(1,NumberOfClusters + 1):
+        for i in range(0,NumberOfClusters):
             ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
 
-            BinaryMask = ~ np.isnan(ImageIn[:,:,1])
+            BinaryMask = ~ np.isnan(ImageIn[:,:,0])
             #linear indices of nonzero values
-            IndexNonZero = np.argwhere(BinaryMask) #find(BinaryMask)
+            #IndexNonZero = np.nonzero(BinaryMask)[1]
+            IndexNonZero = np.argwhere(BinaryMask)
 
             #randomly select the speficied number of observations from the list of
             #indices without replacement
-            IndexNonZeroSelect = IndexNonZero[np.random.choice(len(ImageList),NumberOfClusters, replace=False)]
-            ##IndexNonZeroSelect = IndexNonZero(datasample(1:length(IndexNonZero),NumberOfClusters,...
-            ##    'Replace',false));
+            #IndexNonZeroSelect = IndexNonZero[np.random.choice(len(ImageList),NumberOfClusters-1, replace=False)]
+            #IndexNonZeroSelect = IndexNonZero[np.random.choice(NumberOfClusters-1,len(ImageList), replace=False)]
+            IndexNonZeroSelect = IndexNonZero[np.random.randint(0,len(IndexNonZero),NumberOfClusters)]
+            #rows = np.random.randint(1,len(ImageList),NumberOfClusters)
+            #cols = np.random.randint(1,len(ImageList),NumberOfClusters)
+            ###IndexNonZeroSelect = IndexNonZero(datasample(1:length(IndexNonZero),NumberOfClusters,...
+            ###    'Replace',false));
 
             #row and column of the random selected values
-            [RowSelect, ColumnSelect] = ind2sub(size(BinaryMask),IndexNonZeroSelect);
-
-            clear BinaryMask;clear IndexNonZero; clear IndexNonZeroSelect
-
-            InitialCluster(i,:) = ImageIn(RowSelect(i),ColumnSelect(i),1:NumberOfBands) ##ok<NOPTS>
-        end
-
-    else
+            #[RowSelect, ColumnSelect] = np.unravel_index(len(BinaryMask),IndexNonZeroSelect,, order='F')
+            #[RowSelect, ColumnSelect] = ind2sub(size(BinaryMask),IndexNonZeroSelect);
+            RowSelect = IndexNonZeroSelect[:,0]
+            ColumnSelect = IndexNonZeroSelect[:,1]
+            InitialCluster[i,] = ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands]
+            #np.append(InitialCluster, ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands], axis=0)
+    else:
         load(fullfile(SummaryLocation,override_file))
         override_init =0;
         InitialCluster
