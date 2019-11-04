@@ -39,10 +39,16 @@
 import glob
 import numpy as np
 import os
+import psutil
 import random as rand
+import ray
+import shelve
 import skimage.io
+import subprocess as shell
 #from numpy import zeros
+from datetime import datetime
 from PIL import Image
+from time import sleep
 
 ImageLocation       = 'HighRezWorld'
 SaveLocation        = 'HighRezFullWorld_100_OutputRun3_Catch'
@@ -68,9 +74,9 @@ override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160
 
 directories         = glob.glob(ImageLocation + '/*')
 #
-# for directory = 3:size(directorys,1)
-#     ImageList   = dir(fullfile(ImageLocation,directorys(directory).name,'L8*'));
-#     ImageLocation_Sub = fullfile(ImageLocation,directorys(directory).name) ##ok<NOPTS>
+# for directory = 3:size(directories,1)
+#     ImageList   = dir(fullfile(ImageLocation,directories(directory).name,'L8*'));
+#     ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name) ##ok<NOPTS>
 #     In = dir(fullfile(ImageLocation_Sub,'L*'));
 #     display(['current size = ',num2str(size(In,1)),', added to start size of ',num2str(InSize)])
 #     InSize = InSize+size(In,1);
@@ -97,12 +103,52 @@ CountWhile          = 0;
 local_version       = 0 ##ok<NOPTS>
 
 InitialCluster      = np.empty((0,NumberOfBands), dtype=float32)
+username            = 'Roberto.VillegasDiaz'
 
 # L8_BA_R030_V4_Lat0030_Lon0006.tif (270)[793]
+@ray.remote
+def chipCLassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
+    print('TEST')
+
+def dateNow():
+    return(str(datetime.now()))
+
 def ind2sub(array_shape, ind):
     rows = (ind.astype('int') / array_shape[0])
     cols = (ind.astype('int') % array_shape[1]) # or numpy.mod(ind.astype('int'), array_shape[1])
     return (rows, cols)
+
+def loadEnvironment(filename):
+    existingShelf = shelve.open(filename)
+    for key in existingShelf:
+        globals()[key]=existingShelf[key]
+    existingShelf.close()
+    # Reference: https://stackoverflow.com/questions/2960864/how-can-i-save-all-the-variables-in-the-current-python-session
+
+def removeFiles(directory, pattern):
+    # Get a list of all the file paths that math pattern inside directory
+    fileList = glob.glob(directory + '/' + pattern)
+
+    # Iterate over the list of filepaths & remove each file.
+    for filePath in fileList:
+        try:
+            os.remove(filePath)
+        except:
+            print('Error while deleting file : '', filePath)
+    # Reference: https://thispointer.com/python-how-to-remove-files-by-matching-pattern-wildcards-certain-extensions-only/
+
+def saveEnvironment(filename, variables):
+    newShelf = shelve.open(filename,'n') # 'n' for new
+    for key in variables:
+        try:
+            newShelf[key] = globals()[key]
+        except TypeError:
+            #
+            # __builtins__, newShelf, and imported modules can not be shelved.
+            #
+            print('ERROR shelving: {0}'.format(key))
+    newShelf.close()
+    # Reference: https://stackoverflow.com/questions/2960864/how-can-i-save-all-the-variables-in-the-current-python-session
 
 while FlagCluster > 0:
     NumberOfClusters
@@ -123,11 +169,10 @@ while FlagCluster > 0:
     ##ImageList       = glob.glob(ImageLocation + '/NorthAfrica/L8*')
     ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
     #y = rand.sample(range(1,len(ImageList)+1),NumberOfClusters)
-    y = np.random.choice(len(ImageList),NumberOfClusters)
+    #y = np.random.choice(len(ImageList),NumberOfClusters)
     y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
     if override_init == 0:
-
         for i in range(0,NumberOfClusters):
             ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
 
@@ -151,51 +196,59 @@ while FlagCluster > 0:
             #[RowSelect, ColumnSelect] = ind2sub(size(BinaryMask),IndexNonZeroSelect);
             RowSelect = IndexNonZeroSelect[:,0]
             ColumnSelect = IndexNonZeroSelect[:,1]
+            del BinaryMask
+            del IndexNonZero
+            del IndexNonZeroSelect
             InitialCluster[i,] = ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands]
             #np.append(InitialCluster, ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands], axis=0)
     else:
-        load(fullfile(SummaryLocation,override_file))
-        override_init =0;
-        InitialCluster
-    end
+        loadEnvironment(SummaryLocation + '/' + override_file)
+        override_init = 0
+        #InitialCluster
 
-    clear RowSelect; clear ColumnSelect
+    del RowSelect
+    del ColumnSelect
 
     FlagIteration = 1;
 
-    while FlagIteration > ThresholdIteration
+    while FlagIteration > ThresholdIteration:
         #NumberOfClusters;
         #count the number of pixels in each cluster
 
-
-
         ##   subjobs
-        #Clean up Catch Folder
-        delete(fullfile(SaveLocation,'I*'))
-        delete(fullfile(SaveLocation,'S*'))
-	    delete(fullfile(LogLocation,'*'))
+        #Clean up Cache Folder
+        removeFiles(SaveLocation,'I*')
+        removeFiles(SaveLocation,'S*')
+	    removeFiles(LogLocation,'*')
 
-        pause(5)
-        display('Start the hard work')
-        if local_version ==1
-            directorys = dir(ImageLocation);
-            for directory = 3:size(directorys,1)
-                ImageList   = dir(fullfile(ImageLocation,directorys(directory).name,'L8*'));
-                ImageLocation_Sub = fullfile(ImageLocation,directorys(directory).name) ##ok<NOPTS>
-                parfor chip=1:size(ImageList,1) #[100,105]
-                    display([datestr(now),': ',num2str(directory),' ',directorys(directory).name,': Image ',num2str(chip),' of ',num2str(size(ImageList,1))])
-                    Chip_Classify(ImageLocation_Sub,SaveLocation,fullfile(ImageLocation_Sub,ImageList(chip).name),NumberOfClusters,InitialCluster)
-                end
-            end
-        else
-            display([datestr(now),'creating jobs'])
-            directorys = dir(ImageLocation);
+        sleep(5)
+        print('Start the hard work')
+        if local_version == 1:
+            directories = sorted(glob.glob(ImageLocation + '/*'))
+            #for directory in range(0,len(directories)):
+            for directory in directories):
+                ImageList = [os.path.basename(x) for x in glob.glob(directory + '/L8*')]
+                ImageList = sorted(glob.glob(directory + '/L8*'))
+                ImageLocation_Sub = directory
+                for chip in ImageList:
+                    print(dateNow() + ': '+ str(directories.index(directory) + 1) + ' ' + directory + ': Image ' + str(ImageList.index(chip) + 1) + ' of ' + str(len(ImageList)))
+                    chipCLassify(ImageLocation_Sub,SaveLocation,chip,NumberOfClusters,InitialCluster)
+                #parfor chip=1:size(ImageList,1) #[100,105]
+                #    display([datestr(now),': ',num2str(directory),' ',directories(directory).name,': Image ',num2str(chip),' of ',num2str(size(ImageList,1))])
+                #    Chip_Classify(ImageLocation_Sub,SaveLocation,fullfile(ImageLocation_Sub,ImageList(chip).name),NumberOfClusters,InitialCluster)
+                #end
+            #end
+        else:
+            print(dateNow() + ' creating jobs')
+            directories = sorted(glob.glob(ImageLocation + '/*'))
 
             InSize = 0;
-            unix('scancel --user=larry.leigh','-echo');
-            for directory = 3:size(directorys,1)
-                Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directorys(directory).name,'L8*'));
-                Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directorys(directory).name) ##ok<NOPTS>
+            shell.call('scancel --user=' + username)
+            #unix('scancel --user=larry.leigh','-echo');
+            for directory in directories):
+            #for directory = 3:size(directories,1)
+                Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directories(directory).name,'L8*'));
+                Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name) ##ok<NOPTS>
                 In = dir(fullfile(Jobs(directory).ImageLocation_Sub,'L*'));
                 display(['current size = ',num2str(size(In,1)),', added to start size of ',num2str(InSize)])
                 InSize = InSize+size(In,1);
