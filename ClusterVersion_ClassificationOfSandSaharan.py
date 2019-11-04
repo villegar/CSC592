@@ -1,4 +1,4 @@
-# Code By: Mahesh Shrestha
+len(In)# Code By: Mahesh Shrestha
 # March 1, 2017
 
 # Data: Google Earth Engine (Landsat 8 OLI)
@@ -45,8 +45,10 @@ import ray
 import shelve
 import skimage.io
 import subprocess as shell
+import time
 #from numpy import zeros
 from datetime import datetime
+from math import sqrt
 from PIL import Image
 from time import sleep
 
@@ -54,7 +56,7 @@ ImageLocation       = 'HighRezWorld'
 SaveLocation        = 'HighRezFullWorld_100_OutputRun3_Catch'
 SummaryLocation     = 'HighRezFullWorld_100_OutputRun3_Catch_Summary'
 LogLocation	        = 'logs'
-BaseName            = 'HighRezFullWorld_100' ##ok<NOPTS>
+BaseName            = 'HighRezFullWorld_100'
 override_init       = 1; # set to 1 to start init file below...
 override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160.mat'
 #HighRezFullWorld_100_2019.10.24_09.42_InitialCluster_C160.mat'
@@ -76,13 +78,13 @@ directories         = glob.glob(ImageLocation + '/*')
 #
 # for directory = 3:size(directories,1)
 #     ImageList   = dir(fullfile(ImageLocation,directories(directory).name,'L8*'));
-#     ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name) ##ok<NOPTS>
+#     ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name)
 #     In = dir(fullfile(ImageLocation_Sub,'L*'));
-#     display(['current size = ',num2str(size(In,1)),', added to start size of ',num2str(InSize)])
-#     InSize = InSize+size(In,1);
+#     print(['current size = ',str(len(In)),', added to start size of ',str(InSize)])
+#     InSize = InSize+len(In);
 #
 #     create_job(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster)
-#     display([datestr(now),'starting queue'])
+#     print([dateNow(),'starting queue'])
 #     unix('sbatch job.slurm','-echo');
 #     pause(15)
 # end
@@ -100,25 +102,36 @@ ThresholdIteration  = 0.0001; #0.0001;
 CountWhile          = 0;
 
 #local loops in serial, set to 0 to run cluster jobs
-local_version       = 0 ##ok<NOPTS>
+local_version       = 0
 
 InitialCluster      = np.empty((0,NumberOfBands), dtype=float32)
 username            = 'Roberto.VillegasDiaz'
 
 # L8_BA_R030_V4_Lat0030_Lon0006.tif (270)[793]
 @ray.remote
-def chipCLassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
-    print('TEST')
+def chipClassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
+    print('Classifying chip')
+    sleep(1)
 
-def dateNow():
+def createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,extra):
+    print('Creating job')
+    sleep(1)
+
+def dateNow(format = None):
+    if(format != None):
+        return(datetime.now().strftime(format))
     return(str(datetime.now()))
+
+def findNonCompletedAndResubmit(Jobs,Out,InSize,SaveLocation,NumberOfClusters,InitialCluster):
+    print('Finding non-completed jobs and resubmitting')
+    sleep(1)
 
 def ind2sub(array_shape, ind):
     rows = (ind.astype('int') / array_shape[0])
     cols = (ind.astype('int') % array_shape[1]) # or numpy.mod(ind.astype('int'), array_shape[1])
     return (rows, cols)
 
-def loadEnvironment(filename):
+def load(filename):
     existingShelf = shelve.open(filename)
     for key in existingShelf:
         globals()[key]=existingShelf[key]
@@ -137,7 +150,7 @@ def removeFiles(directory, pattern):
             print('Error while deleting file : '', filePath)
     # Reference: https://thispointer.com/python-how-to-remove-files-by-matching-pattern-wildcards-certain-extensions-only/
 
-def saveEnvironment(filename, variables):
+def save(filename, variables):
     newShelf = shelve.open(filename,'n') # 'n' for new
     for key in variables:
         try:
@@ -152,7 +165,7 @@ def saveEnvironment(filename, variables):
 
 while FlagCluster > 0:
     NumberOfClusters
-    CountWhile      = CountWhile + 1 ##ok<NOPTS>
+    CountWhile      = CountWhile + 1
 
     #store the intial estimate of centriod of the specified number of
     #clusters and bands
@@ -202,7 +215,7 @@ while FlagCluster > 0:
             InitialCluster[i,] = ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands]
             #np.append(InitialCluster, ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands], axis=0)
     else:
-        loadEnvironment(SummaryLocation + '/' + override_file)
+        load(SummaryLocation + '/' + override_file)
         override_init = 0
         #InitialCluster
 
@@ -232,9 +245,9 @@ while FlagCluster > 0:
                 ImageLocation_Sub = directory
                 for chip in ImageList:
                     print(dateNow() + ': '+ str(directories.index(directory) + 1) + ' ' + directory + ': Image ' + str(ImageList.index(chip) + 1) + ' of ' + str(len(ImageList)))
-                    chipCLassify(ImageLocation_Sub,SaveLocation,chip,NumberOfClusters,InitialCluster)
+                    chipClassify(ImageLocation_Sub,SaveLocation,chip,NumberOfClusters,InitialCluster)
                 #parfor chip=1:size(ImageList,1) #[100,105]
-                #    display([datestr(now),': ',num2str(directory),' ',directories(directory).name,': Image ',num2str(chip),' of ',num2str(size(ImageList,1))])
+                #    print([dateNow(),': ',str(directory),' ',directories(directory).name,': Image ',str(chip),' of ',str(size(ImageList,1))])
                 #    Chip_Classify(ImageLocation_Sub,SaveLocation,fullfile(ImageLocation_Sub,ImageList(chip).name),NumberOfClusters,InitialCluster)
                 #end
             #end
@@ -245,165 +258,151 @@ while FlagCluster > 0:
             InSize = 0;
             shell.call('scancel --user=' + username)
             #unix('scancel --user=larry.leigh','-echo');
+            Jobs = list()
             for directory in directories):
             #for directory = 3:size(directories,1)
-                Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directories(directory).name,'L8*'));
-                Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name) ##ok<NOPTS>
-                In = dir(fullfile(Jobs(directory).ImageLocation_Sub,'L*'));
-                display(['current size = ',num2str(size(In,1)),', added to start size of ',num2str(InSize)])
-                InSize = InSize+size(In,1);
+                newJob = {
+                    'ImageList' = sorted(glob.glob(directory + '/L8*')),
+                    'ImageLocation_Sub' = directory
+                }
+                Jobs.append(newJob)
+                In = sorted(glob.glob(directory + '/L*'))
+                print('Current size = ' + str(len(In)) + ' added to start size of ' + str(InSize))
+                InSize = InSize + len(In)
+                #Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directories(directory).name,'L8*'));
+                #Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name)
+                #In = dir(fullfile(Jobs(directory).ImageLocation_Sub,'L*'));
+                #print(['current size = ',str(len(In)),', added to start size of ',str(InSize)])
+                #InSize = InSize+len(In);
+                createJob(newJob.get('ImageLocation_Sub'),SaveLocation,newJob.get('ImageList'),NumberOfClusters,InitialCluster,0)
+                print(dateNow() + 'starting queue')
 
-                create_job(Jobs(directory).ImageLocation_Sub,SaveLocation,Jobs(directory).ImageList,NumberOfClusters,InitialCluster,0)
-                display([datestr(now),'starting queue'])
+                shell.call('sbatch job.slurm')
+                #[s,w] = unix('sbatch job.slurm','-echo');
+                sleep(30)
+            #end
 
-                [s,w] = unix('sbatch job.slurm','-echo');
-                pause(30)
-
-            end
-
-            tic
-            notequal =1;
-            display([datestr(now),'Monitoring'])
-            repeated=0;
-            last=0;
-            start=last;
-            retry=0
-            while notequal == 1
-                #In = dir(fullfile(ImageLocation,'L*'));
-                Out = dir(fullfile(SaveLocation,'I*'));
-                if InSize==size(Out,1)
-                    notequal =0;
-                else
-                    display([datestr(now),':not equal pausing for 30seconds. Total to run: ',num2str(InSize),', Current Complete: ',num2str(size(Out,1)),' Started at:',num2str(start),' Total Allowed Run = ',num2str((InSize/10)*25*NumberOfBands)])
-                    toc
-                    if last==size(Out,1)
-                        if and(repeated >30,last~=start)  #Stop cause of so many repeats
-                            notequal = 0;
-                            save('notCompleteList.mat','In','Out')
+            tic = time.time()
+            notequal = 1;
+            print(dateNow() + 'Monitoring')
+            repeated = 0;
+            last = 0;
+            start = last;
+            retry = 0
+            while notequal == 1:
+                ##In = dir(fullfile(ImageLocation,'L*'));
+                Out = sorted(glob.glob(SaveLocation + '/I*'))
+                if InSize == len(Out):
+                    notequal = 0
+                else:
+                    print(dateNow() + ': not equal pausing for 30 seconds. Total to run: ' + str(len(InSize)) + ', Current Completed: ' + str(len(Out)) + ' Started at: ' + str(start) + ' Total Allowed Run = ',str((InSize/10)*25*NumberOfBands))
+                    #print([dateNow(),':not equal pausing for 30seconds. Total to run: ',str(InSize),', Current Complete: ',str(size(Out,1)),' Started at:',str(start),' Total Allowed Run = ',str((InSize/10)*25*NumberOfBands)])
+                    toc = time.time() - tic
+                    if last == len(Out):
+                        if (repeated > 30 and last != start):  #Stop cause of so many repeats
+                            notequal = 0
+                            save('notCompleteList.mat',['In','Out'])
                             save('JobsSumbitted_finished.mat','Jobs')
                             save('JobsCompleted_finished.mat','Out')
-                            if retry<3
-                                disp('Did not complete all jobs, finding missing jobs and resubmitting')
-                                FindNonCompletesAndResubmit(Jobs,Out,InSize,SaveLocation,NumberOfClusters,InitialCluster);#Creates softlinks to the missing runs....
+                            if retry < 3:
+                                print('Did not complete all jobs, finding missing jobs and resubmitting')
+                                findNonCompletedAndResubmit(Jobs,Out,InSize,SaveLocation,NumberOfClusters,InitialCluster) #Creates softlinks to the missing runs....
 
-                                ImageList   = dir(fullfile('Reprocess_Temp','L8*'));
-                                ImageLocation_Sub = fullfile('Reprocess_Temp') ##ok<NOPTS>
-                                In = dir(fullfile(ImageLocation_Sub,'L*'));
-                                display(['current size = ',num2str(size(In,1)),', added to start size of ',num2str(InSize)])
-                                #InSize = InSize+size(In,1);
+                                ImageList = sorted(glob.glob('Reprocess_Temp' + '/L8*'))
+                                ImageLocation_Sub = 'Reprocess_Temp'
+                                In = sorted(glob.glob(ImageLocation_Sub + '/L*'))
+                                print('current size = ' + str(len(In)) + ', added to start size of ' + str(InSize))
+                                #InSize = InSize+len(In);
 
-                                create_job(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,0)
-                                disp([datestr(now),'starting queue'])
+                                createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,0)
+                                print(dateNow() + ' starting queue'])
 
-                                [s,w] = unix('sbatch job.slurm','-echo');
-                                pause(30)
-
-
+                                shell.call('sbatch job.slurm')
+                                #[s,w] = unix('sbatch job.slurm','-echo');
+                                sleep(30)
 
                                 #create_job(Jobs(directory).ImageLocation_Sub,SaveLocation,Jobs(directory).ImageList,NumberOfClusters,InitialCluster,0)
-                                retry=retry+1
-                                repeated=0
-                                notequal=1;
-                                start=last
-                            end
-                        else
-                            repeated=repeated+1;
-                            display(['Repeated: ',num2str(repeated)])
-                        end
-                    else
+                                retry = retry + 1
+                                repeated = 0
+                                notequal = 1
+                                start = last
+                        else:
+                            repeated = repeated + 1;
+                            print('Repeated: ' + str(repeated))
+                    else:
                         repeated = 0;
-                        last=size(Out,1);
-                    end
-
+                        last = len(Out);
 
                     save('JobsSumbitted.mat','Jobs')
                     save('JobsCompleted.mat','Out')
-                    if toc>(InSize/10)*25*NumberOfBands  #Stop cause of time
-                        notequal = 0;
+                    if toc > (InSize/10)*25*NumberOfBands:  #Stop because of time
+                        notequal = 0
                         save('notCompleteList.mat','In','Out')
                         save('JobsSumbitted_finished.mat','Jobs')
                         save('JobsCompleted_finished.mat','Out')
-                    end
-                    pause(30)
-                end
-            end
-            toc
-        end
-##   Collect Results
-        display([datestr(now),': collecting results']) ##ok<*DPLAYCHAR>
-        OutputList = dir(fullfile(SaveLocation,'S*'));
-        Collected_MeanCluster        = 0;   #not really a mean it's more of a summed moved distance, we divid later by the number to get an acutal mean....
-        Collected_CountClusterPixels = 0;
-        Collected_ClusterPixelCount  = 0;
-        Collected_Totalsse           = 0;
-        Collected_ClusterSdAllBands  = zeros(NumberOfClusters,NumberOfBands);
-        Collected_ClusterMeanAllBands= zeros(NumberOfClusters,NumberOfBands);
-        size(OutputList)
-        for chip = 1:size(OutputList,1)
-            try
-                load(fullfile(SaveLocation,OutputList(chip).name))
-                Collected_MeanCluster         = Collected_MeanCluster + MeanCluster;
-                Collected_CountClusterPixels  = Collected_CountClusterPixels +CountClusterPixels;
-                Collected_ClusterPixelCount   = Collected_ClusterPixelCount + ClusterPixelCount;
-                Collected_Totalsse            = Collected_Totalsse + Totalsse;
-                for numcluster = 1:NumberOfClusters
-                    Collected_ClusterMeanAllBands(numcluster,:) = (Collected_ClusterPixelCount(numcluster)*Collected_ClusterMeanAllBands(numcluster,:) + ClusterPixelCount(numcluster)*ClusterMeanAllBands(numcluster,:))/(Collected_ClusterPixelCount(numcluster)+ClusterPixelCount(numcluster));
-                    Collected_ClusterSdAllBands(numcluster,:)   = sqrt(((Collected_ClusterPixelCount(numcluster)-1)*Collected_ClusterSdAllBands(numcluster,:) + (ClusterPixelCount(numcluster)-1)*ClusterSdAllBands(numcluster,:))/(Collected_ClusterPixelCount(numcluster)+ClusterPixelCount(numcluster)-2));
-                end
-            catch
-                disp('file not readable')
-            end
-        end
+                    sleep(30)
+            toc = time.time() - tic
+        ##   Collect Results
+        print(dateNow() + ': collecting results')
+        OutputList = sorted(glob.glob(SaveLocation + '/S*'))
+        Collected_MeanCluster        = 0   #not really a mean it's more of a summed moved distance, we divide later by the number to get an actual mean....
+        Collected_CountClusterPixels = 0
+        Collected_ClusterPixelCount  = 0
+        Collected_Totalsse           = 0
+        Collected_ClusterSdAllBands  = np.zeros((NumberOfClusters,NumberOfBands))
+        Collected_ClusterMeanAllBands= np.zeros((NumberOfClusters,NumberOfBands))
+        #len(OutputList)
+        for chip in OutputList:
+            try:
+                load(chip)
+                Collected_MeanCluster         = Collected_MeanCluster + MeanCluster
+                Collected_CountClusterPixels  = Collected_CountClusterPixels + CountClusterPixels
+                Collected_ClusterPixelCount   = Collected_ClusterPixelCount + ClusterPixelCount
+                Collected_Totalsse            = Collected_Totalsse + Totalsse
+                for numcluster in range(0,NumberOfClusters):
+                    Collected_ClusterMeanAllBands[numcluster,] = (Collected_ClusterPixelCount[numcluster]*Collected_ClusterMeanAllBands[numcluster,] + ClusterPixelCount[numcluster]*ClusterMeanAllBands[numcluster,])/(Collected_ClusterPixelCount[numcluster]+ClusterPixelCount[numcluster])
+                    Collected_ClusterSdAllBands[numcluster,]   = sqrt(((Collected_ClusterPixelCount[numcluster]-1)*Collected_ClusterSdAllBands[numcluster,] + (ClusterPixelCount[numcluster]-1)*ClusterSdAllBands[numcluster,])/(Collected_ClusterPixelCount[numcluster]+ClusterPixelCount[numcluster]-2))
+            except:
+                print('file not readable')
 
-##
         #find the new estimate of the center of cluster
         NewCluster = (bsxfun(@rdivide,Collected_MeanCluster',Collected_CountClusterPixels'))';
 
         #calculate difference with the previous mean
-        DiffMean = abs(InitialCluster - NewCluster) ##ok<NOPTS>
+        DiffMean = abs(InitialCluster - NewCluster)
 
         #find the maximum value of difference of mean between two clusters
         FlagIteration = max(max(DiffMean));
-        display('========================================================================================')
-        display([datestr(now),' What is the maxiumn a cluster center moved from inital = ',num2str(FlagIteration),', must be less then ',num2str(ThresholdIteration)])
-        display([datestr(now),' Current Number of Cluster = ',num2str(NumberOfClusters)])
-        display('========================================================================================')
+        print('========================================================================================')
+        print(dateNow() + ' What is the maxiumn a cluster center moved from inital = ' + str(FlagIteration) + ', must be less then ' + str(ThresholdIteration))
+        print(dateNow() + ' Current Number of Cluster = ' + str(NumberOfClusters))
+        print('========================================================================================')
         #store the new cluster value to the initial cluster value
         InitialCluster = NewCluster
-        display('========================================================================================')
-        clear NewCluster;
-        save(fullfile(SummaryLocation,[BaseName,'_',datestr(now,'yyyy.mm.dd_HH.MM'),'_InitialCluster_C',num2str(NumberOfClusters),'.mat']), 'InitialCluster');
-        save(fullfile(SummaryLocation,[BaseName,'_',datestr(now,'yyyy.mm.dd_HH.MM'),'_World_CountClusterPixels_C',num2str(NumberOfClusters),'.mat']), 'Collected_ClusterPixelCount');
-        save(fullfile(SummaryLocation,[BaseName,'_',datestr(now,'yyyy.mm.dd_HH.MM'),'_World_ClusterMeanAllBands_C',num2str(NumberOfClusters),'.mat']),'Collected_ClusterMeanAllBands');
-        save(fullfile(SummaryLocation,[BaseName,'_',datestr(now,'yyyy.mm.dd_HH.MM'),'_World_ClusterSdAllBands_C',num2str(NumberOfClusters),'.mat']),  'Collected_ClusterSdAllBands');
+        print('========================================================================================')
+        del NewCluster
+        date = dateNow('%Y.%m.%d_%I.%M')
+        save(BaseName + '_' + date + '_InitialCluster_C' + str(NumberOfClusters),'.mat', 'InitialCluster')
+        save(BaseName + '_' + date + '_World_CountClusterPixels_C' + str(NumberOfClusters),'.mat', 'Collected_ClusterPixelCount')
+        save(BaseName + '_' + date + '_World_ClusterMeanAllBands_C' + str(NumberOfClusters),'.mat','Collected_ClusterMeanAllBands')
+        save(BaseName + '_' + date + '_World_ClusterSdAllBands_C' + str(NumberOfClusters),'.mat',  'Collected_ClusterSdAllBands')
 
-    end
-    clear TsseCluster
+    del TsseCluster
 
-    TsseAllCluster(NumberOfClusters) = Collected_Totalsse; ##ok<SAGROW>
-    ThresholdTsseChange = 20;
+    TsseAllCluster[NumberOfClusters] = Collected_Totalsse ##ok<SAGROW>
+    ThresholdTsseChange = 20
 
     #calculate the change in TSSE when number of clusters is increased
 
-    if(NumberOfClusters > 2)
+    if(NumberOfClusters > 2):
+        DiffTssePercentage = ((TsseAllCluster[NumberOfClusters-1] - TsseAllCluster[NumberOfClusters])/(TsseAllCluster[NumberOfClusters-1]))*100
 
-        DiffTssePercentage = ((TsseAllCluster(NumberOfClusters-1) - TsseAllCluster(NumberOfClusters))...
-            ./(TsseAllCluster(NumberOfClusters-1)))*100 ##ok<NOPTS>
-
-        if(abs(DiffTssePercentage) > ThresholdTsseChange )
-
-            FlagCluster = 1 ##ok<NOPTS>
-
-        else
-
-            FlagCluster = 0 ##ok<NOPTS>
-
-        end
-    end
-
-    NumberOfClusters = NumberOfClusters +1;
-end
-
-save(fullfile([BaseName,'_',datestr(now,'yyyy.mm.dd_HH.MM'),'_World_CountClusterPixels.mat']), 'Collected_ClusterPixelCount');
-save(fullfile([BaseName,'_',datestr(now,'yyyy.mm.dd_HH.MM'),'_World_ClusterMeanAllBands.mat']),'Collected_ClusterMeanAllBands');
-save(fullfile([BaseName,'_',datestr(now,'yyyy.mm.dd_HH.MM'),'_World_ClusterSdAllBands.mat']),  'Collected_ClusterSdAllBands');
+        if(abs(DiffTssePercentage) > ThresholdTsseChange):
+            FlagCluster = 1
+        else:
+            FlagCluster = 0
+    NumberOfClusters = NumberOfClusters + 1
+date = dateNow('%Y.%m.%d_%I.%M')
+save(BaseName + '_' + date + '_World_CountClusterPixels.mat', 'Collected_ClusterPixelCount')
+save(BaseName + '_' + date + '_World_ClusterMeanAllBands.mat','Collected_ClusterMeanAllBands')
+save(BaseName + '_' + date + '_World_ClusterSdAllBands.mat',  'Collected_ClusterSdAllBands')
