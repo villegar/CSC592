@@ -28,3 +28,13 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	with rio.open(ImageFile) as gtf_img:
 		info = gtf_img.meta
 	toc = time.time()
+	#[ImageRow, ImageColumn, NumberOfBands] = len(ImageIn)
+	ImageRow = len(ImageIn[0])
+	ImageColumn = len(ImageIn[1])
+	NumberOfBands = len(ImageIn[2])
+	
+	if NumberOfBands > 8
+		NumberofBands = NumberofBands - 1
+		
+	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfCluster))
+	CountClisterPixels = np.zeros((NumberOfCluster, 1))
