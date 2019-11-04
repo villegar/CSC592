@@ -104,7 +104,7 @@ CountWhile          = 0;
 #local loops in serial, set to 0 to run cluster jobs
 local_version       = 0
 
-InitialCluster      = np.empty((0,NumberOfBands), dtype=float32)
+InitialCluster      = np.empty((0,NumberOfBands), dtype=np.float32)
 username            = 'Roberto.VillegasDiaz'
 
 # L8_BA_R030_V4_Lat0030_Lon0006.tif (270)[793]
@@ -113,9 +113,10 @@ def chipClassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,Initia
     print('Classifying chip')
     sleep(1)
 
-def createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,extra):
-    print('Creating job')
-    sleep(1)
+from createJob import createJob
+#def createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,extra):
+#    print('Creating job')
+#    sleep(1)
 
 def dateNow(format = None):
     if(format != None):
@@ -185,7 +186,7 @@ while FlagCluster > 0:
     #y = np.random.choice(len(ImageList),NumberOfClusters)
     y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
-    if override_init == 0:
+    if override_init == 1:
         for i in range(0,NumberOfClusters):
             ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
 
@@ -239,7 +240,7 @@ while FlagCluster > 0:
         if local_version == 1:
             directories = sorted(glob.glob(ImageLocation + '/*'))
             #for directory in range(0,len(directories)):
-            for directory in directories:
+            for directory in directories[1]:
                 ImageList = [os.path.basename(x) for x in glob.glob(directory + '/L8*')]
                 ImageList = sorted(glob.glob(directory + '/L8*'))
                 ImageLocation_Sub = directory
@@ -256,10 +257,10 @@ while FlagCluster > 0:
             directories = sorted(glob.glob(ImageLocation + '/*'))
 
             InSize = 0;
-            shell.call('scancel --user=' + username)
-            #unix('scancel --user=larry.leigh','-echo');
+            #shell.call('scancel --user=' + username)
+            ##unix('scancel --user=larry.leigh','-echo');
             Jobs = list()
-            for directory in directories:
+            for directory in directories[1]:
             #for directory = 3:size(directories,1)
                 newJob = {
                     'ImageList' : sorted(glob.glob(directory + '/L8*')),
@@ -277,8 +278,8 @@ while FlagCluster > 0:
                 createJob(newJob.get('ImageLocation_Sub'),SaveLocation,newJob.get('ImageList'),NumberOfClusters,InitialCluster,0)
                 print(dateNow() + 'starting queue')
 
-                shell.call('sbatch job.slurm')
-                #[s,w] = unix('sbatch job.slurm','-echo');
+                #shell.call('sbatch job.slurm')
+                ##[s,w] = unix('sbatch job.slurm','-echo');
                 sleep(30)
             #end
 
@@ -295,7 +296,7 @@ while FlagCluster > 0:
                 if InSize == len(Out):
                     notequal = 0
                 else:
-                    print(dateNow() + ': not equal pausing for 30 seconds. Total to run: ' + str(len(InSize)) + ', Current Completed: ' + str(len(Out)) + ' Started at: ' + str(start) + ' Total Allowed Run = ',str((InSize/10)*25*NumberOfBands))
+                    print(dateNow() + ': not equal pausing for 30 seconds. Total to run: ' + str(InSize) + ', Current Completed: ' + str(len(Out)) + ' Started at: ' + str(start) + ' Total Allowed Run = ' + str((InSize/10)*25*NumberOfBands))
                     #print([dateNow(),':not equal pausing for 30seconds. Total to run: ',str(InSize),', Current Complete: ',str(size(Out,1)),' Started at:',str(start),' Total Allowed Run = ',str((InSize/10)*25*NumberOfBands)])
                     toc = time.time() - tic
                     if last == len(Out):
@@ -317,8 +318,8 @@ while FlagCluster > 0:
                                 createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,0)
                                 print(dateNow() + ' starting queue')
 
-                                shell.call('sbatch job.slurm')
-                                #[s,w] = unix('sbatch job.slurm','-echo');
+                                #shell.call('sbatch job.slurm')
+                                ##[s,w] = unix('sbatch job.slurm','-echo');
                                 sleep(30)
 
                                 #create_job(Jobs(directory).ImageLocation_Sub,SaveLocation,Jobs(directory).ImageList,NumberOfClusters,InitialCluster,0)
