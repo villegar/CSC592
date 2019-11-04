@@ -14,7 +14,6 @@ import time
 from datetime import datetime
 from math import sqrt
 from PIL import Image
-from time import sleep
 #for image
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -23,11 +22,13 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	tic = time.time()
 	Image.show(title=ImageFile)
 	#pause(random('beta',1,1)*30)
+	#Matlab random('beta',1,1) = Python np.random.beta(1,1)
+	time.sleep(np.random.beta(1,1)*30)
 	
 	ImageIn = mpimg.imread(ImageFile)
 	with rio.open(ImageFile) as gtf_img:
 		info = gtf_img.meta
-	toc = time.time()
+	print(time.time()-tic)
 	#[ImageRow, ImageColumn, NumberOfBands] = len(ImageIn)
 	ImageRow = len(ImageIn[0])
 	ImageColumn = len(ImageIn[1])
@@ -36,5 +37,17 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	if NumberOfBands > 8
 		NumberofBands = NumberofBands - 1
 		
-	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfCluster))
-	CountClisterPixels = np.zeros((NumberOfCluster, 1))
+	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
+	CountClusterPixels = np.zeros((NumberOfClusters, 1))
+	MeanCluster = np.zeros((NumberOfClusters, NumberOfBands))
+	EuclideanDistanceResult = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
+	os.mkdir('local/larry.leigh.temp/')
+	print('starting big loop')
+	print(time.time()-tic)
+	
+	for j in range(1, ImageRow)
+		#display(num2str(100*j/ImageRow))
+		for k in range(1, ImageColumn)
+			temp(:) = ImageIn(j, k, 1:NumberOfBands)
+			EuclideanDistanceResultant(j, k, :) = sqrt(sum())
+		
