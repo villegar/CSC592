@@ -11,7 +11,8 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
         return
 
     jobDirectory = 'jobs'
-    jobPrefix = os.path.split(ImageLocation)[0].split('/')[-1]
+    jobPrefix = os.path.split(ImageLocation)[-1]
+	#.split('/')[-1]
     if not os.path.exists(jobDirectory):
         os.makedirs(jobDirectory)
 
