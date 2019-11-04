@@ -111,12 +111,12 @@ username            = 'Roberto.VillegasDiaz'
 #@ray.remote
 def chipClassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
     print('Classifying chip')
-    sleep(1)
+    #sleep(1)
 
 from createJob import createJob
-#def createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,extra):
+#def createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,fileORlist):
 #    print('Creating job')
-#    sleep(1)
+#    #sleep(1)
 
 def dateNow(format = None):
     if(format != None):
@@ -125,7 +125,7 @@ def dateNow(format = None):
 
 def findNonCompletedAndResubmit(Jobs,Out,InSize,SaveLocation,NumberOfClusters,InitialCluster):
     print('Finding non-completed jobs and resubmitting')
-    sleep(1)
+    #sleep(1)
 
 def ind2sub(array_shape, ind):
     rows = (ind.astype('int') / array_shape[0])
@@ -152,6 +152,9 @@ def removeFiles(directory, pattern):
     # Reference: https://thispointer.com/python-how-to-remove-files-by-matching-pattern-wildcards-certain-extensions-only/
 
 def save(filename, variables):
+    directory = os.path.dirname(filename)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     newShelf = shelve.open(filename,'n') # 'n' for new
     for key in variables:
         try:
@@ -215,6 +218,7 @@ while FlagCluster > 0:
             del IndexNonZeroSelect
             InitialCluster[i,] = ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands]
             #np.append(InitialCluster, ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands], axis=0)
+        save(SummaryLocation + '/' + override_file,InitialCluster)
     else:
         load(SummaryLocation + '/' + override_file)
         override_init = 0
@@ -235,7 +239,7 @@ while FlagCluster > 0:
         removeFiles(SaveLocation,'S*')
         removeFiles(LogLocation,'*')
 
-        sleep(5)
+        #sleep(5)
         print('Start the hard work')
         if local_version == 1:
             directories = sorted(glob.glob(ImageLocation + '/*'))
@@ -280,7 +284,7 @@ while FlagCluster > 0:
 
                 #shell.call('sbatch job.slurm')
                 ##[s,w] = unix('sbatch job.slurm','-echo');
-                sleep(30)
+                #sleep(30)
             #end
 
             tic = time.time()
@@ -320,7 +324,7 @@ while FlagCluster > 0:
 
                                 #shell.call('sbatch job.slurm')
                                 ##[s,w] = unix('sbatch job.slurm','-echo');
-                                sleep(30)
+                                #sleep(30)
 
                                 #create_job(Jobs(directory).ImageLocation_Sub,SaveLocation,Jobs(directory).ImageList,NumberOfClusters,InitialCluster,0)
                                 retry = retry + 1
@@ -341,7 +345,7 @@ while FlagCluster > 0:
                         save('notCompleteList.mat','In','Out')
                         save('JobsSumbitted_finished.mat','Jobs')
                         save('JobsCompleted_finished.mat','Out')
-                    sleep(30)
+                    #sleep(30)
             toc = time.time() - tic
         ##   Collect Results
         print(dateNow() + ': collecting results')
