@@ -93,7 +93,7 @@ directories         = glob.glob(ImageLocation + '/*')
 ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
 
 #start with the number of clusters
-NumberOfClusters    = 2;
+NumberOfClusters    = 160;
 NumberOfBands       = 16;
 
 #flag to check whether to increase clusters or not
@@ -153,9 +153,11 @@ def removeFiles(directory, pattern):
 
 def save(filename, variables):
     directory = os.path.dirname(filename)
-    if not os.path.exists(directory):
+    if not os.path.exists(directory) and directory != '':
         os.makedirs(directory)
     newShelf = shelve.open(filename,'n') # 'n' for new
+    if(type(variables) != type(list())):
+        variables = [variables]
     for key in variables:
         try:
             newShelf[key] = globals()[key]
@@ -189,7 +191,7 @@ while FlagCluster > 0:
     #y = np.random.choice(len(ImageList),NumberOfClusters)
     y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
-    if override_init == 1:
+    if override_init == 0:
         for i in range(0,NumberOfClusters):
             ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
 
@@ -219,13 +221,12 @@ while FlagCluster > 0:
             InitialCluster[i,] = ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands]
             #np.append(InitialCluster, ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands], axis=0)
         save(SummaryLocation + '/' + override_file,'InitialCluster')
+        del RowSelect
+        del ColumnSelect
     else:
         load(SummaryLocation + '/' + override_file)
         override_init = 0
         #InitialCluster
-
-    del RowSelect
-    del ColumnSelect
 
     FlagIteration = 1;
 
@@ -244,7 +245,7 @@ while FlagCluster > 0:
         if local_version == 1:
             directories = sorted(glob.glob(ImageLocation + '/*'))
             #for directory in range(0,len(directories)):
-            for directory in directories[1]:
+            for directory in directories:
                 ImageList = [os.path.basename(x) for x in glob.glob(directory + '/L8*')]
                 ImageList = sorted(glob.glob(directory + '/L8*'))
                 ImageLocation_Sub = directory
@@ -264,12 +265,14 @@ while FlagCluster > 0:
             #shell.call('scancel --user=' + username)
             ##unix('scancel --user=larry.leigh','-echo');
             Jobs = list()
-            for directory in directories[1]:
+            for directory in directories:
             #for directory = 3:size(directories,1)
+                #print(directory)
                 newJob = {
                     'ImageList' : sorted(glob.glob(directory + '/L8*')),
                     'ImageLocation_Sub' : directory
                 }
+                #print(newJob)
                 Jobs.append(newJob)
                 In = sorted(glob.glob(directory + '/L*'))
                 print('Current size = ' + str(len(In)) + ' added to start size of ' + str(InSize))

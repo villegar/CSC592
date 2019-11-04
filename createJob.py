@@ -1,10 +1,22 @@
+import os
+from time import sleep
 def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialCluster,fileORlist):
     print('Creating job')
+    #print(len(ImageList))
+    #print(ImageList)
     length = '{}%{:3.0f}'.format(len(ImageList),10+len(ImageList)/32)
     log_name = '%A_%a'
 
+    if(len(ImageList) == 0):
+        return
+
+    jobDirectory = 'jobs'
+    jobPrefix = os.path.split(ImageLocation)[0].split('/')[-1]
+    if not os.path.exists(jobDirectory):
+        os.makedirs(jobDirectory)
+
     #create job
-    with open('job.slurm', 'a') as jobFile:
+    with open(jobDirectory + '/' + jobPrefix + '.slurm', 'a') as jobFile:
         jobFile.write('#!/bin/bash\n')
         jobFile.write('\n')
         jobFile.write('#SBATCH --job-name=ChipS160      # Job name\n')
@@ -24,7 +36,8 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
         jobFile.write('module list\n')
         jobFile.write('\n')
         if fileORlist == 0:
-            jobFile.write('files=(./{}/*)\n'.format(ImageLocation))
+            #jobFile.write('files=$(./{}/*)\n'.format(ImageLocation))
+            jobFile.write('files=$(find ./{}/*)\n'.format(ImageLocation))
         else:
             jobFile.write('files=$(sed -n "$SLURM_ARRAY_TASK_ID"p {})'.format(ImageLocation))
         jobFile.write('\n')
@@ -47,19 +60,19 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
 
         jobFile.write('\n')
 
-        jobFile.write('echo matlab -r "Chip_Classify(''{}'', ''{}'',''${files[$SLURM_ARRAY_TASK_ID]}'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
+        jobFile.write('echo matlab -r "Chip_Classify(''{}'', ''{}'',''$files[$SLURM_ARRAY_TASK_ID]'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
         for c in range(1,NumberOfClusters):
             if InitialCluster.shape[1] == 7:
-                jobFile.write('%f, %f, %f, %f, %f, %f, %f'.format(*InitialCluster[c,]))
+                jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             elif InitialCluster.shape[1] == 16:
-                jobFile.write('%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f'.format(*InitialCluster[c,]))
+                jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
         jobFile.write('])exit"\n')
 
-        jobFile.write('matlab -r "Chip_Classify(''{}'', ''{}'',''${files[$SLURM_ARRAY_TASK_ID]}'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
+        jobFile.write('matlab -r "Chip_Classify(''{}'', ''{}'',''$files[$SLURM_ARRAY_TASK_ID]'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
         for c in range(1,NumberOfClusters):
             if InitialCluster.shape[1] == 7:
-                jobFile.write('%f, %f, %f, %f, %f, %f, %f'.format(*InitialCluster[c,]))
+                jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             elif InitialCluster.shape[1] == 16:
-                jobFile.write('%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f'.format(*InitialCluster[c,]))
+                jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
         jobFile.write('])exit"\n')
     sleep(1)
