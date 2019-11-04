@@ -1,4 +1,4 @@
-len(In)# Code By: Mahesh Shrestha
+# Code By: Mahesh Shrestha
 # March 1, 2017
 
 # Data: Google Earth Engine (Landsat 8 OLI)
@@ -108,7 +108,7 @@ InitialCluster      = np.empty((0,NumberOfBands), dtype=float32)
 username            = 'Roberto.VillegasDiaz'
 
 # L8_BA_R030_V4_Lat0030_Lon0006.tif (270)[793]
-@ray.remote
+#@ray.remote
 def chipClassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
     print('Classifying chip')
     sleep(1)
@@ -147,7 +147,7 @@ def removeFiles(directory, pattern):
         try:
             os.remove(filePath)
         except:
-            print('Error while deleting file : '', filePath)
+            print('Error while deleting file : ' + filePath)
     # Reference: https://thispointer.com/python-how-to-remove-files-by-matching-pattern-wildcards-certain-extensions-only/
 
 def save(filename, variables):
@@ -232,14 +232,14 @@ while FlagCluster > 0:
         #Clean up Cache Folder
         removeFiles(SaveLocation,'I*')
         removeFiles(SaveLocation,'S*')
-	    removeFiles(LogLocation,'*')
+        removeFiles(LogLocation,'*')
 
         sleep(5)
         print('Start the hard work')
         if local_version == 1:
             directories = sorted(glob.glob(ImageLocation + '/*'))
             #for directory in range(0,len(directories)):
-            for directory in directories):
+            for directory in directories:
                 ImageList = [os.path.basename(x) for x in glob.glob(directory + '/L8*')]
                 ImageList = sorted(glob.glob(directory + '/L8*'))
                 ImageLocation_Sub = directory
@@ -259,11 +259,11 @@ while FlagCluster > 0:
             shell.call('scancel --user=' + username)
             #unix('scancel --user=larry.leigh','-echo');
             Jobs = list()
-            for directory in directories):
+            for directory in directories:
             #for directory = 3:size(directories,1)
                 newJob = {
-                    'ImageList' = sorted(glob.glob(directory + '/L8*')),
-                    'ImageLocation_Sub' = directory
+                    'ImageList' : sorted(glob.glob(directory + '/L8*')),
+                    'ImageLocation_Sub' : directory
                 }
                 Jobs.append(newJob)
                 In = sorted(glob.glob(directory + '/L*'))
@@ -315,7 +315,7 @@ while FlagCluster > 0:
                                 #InSize = InSize+len(In);
 
                                 createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,0)
-                                print(dateNow() + ' starting queue'])
+                                print(dateNow() + ' starting queue')
 
                                 shell.call('sbatch job.slurm')
                                 #[s,w] = unix('sbatch job.slurm','-echo');
@@ -366,7 +366,7 @@ while FlagCluster > 0:
                 print('file not readable')
 
         #find the new estimate of the center of cluster
-        NewCluster = (bsxfun(@rdivide,Collected_MeanCluster',Collected_CountClusterPixels'))';
+        NewCluster = Collected_MeanCluster/Collected_CountClusterPixels#(bsxfun(@rdivide,Collected_MeanCluster',Collected_CountClusterPixels'))';
 
         #calculate difference with the previous mean
         DiffMean = abs(InitialCluster - NewCluster)
