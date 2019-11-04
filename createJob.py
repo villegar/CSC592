@@ -1,6 +1,6 @@
-def createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,extra):
+def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialCluster,fileORlist):
     print('Creating job')
-    length = str(len(ImageList)) + '%' + '{:3.0f}'.format(10+len(ImageList)/32)
+    length = '{}%{:3.0f}'.format(len(ImageList),10+len(ImageList)/32)
     log_name = '%A_%a'
 
     #create job

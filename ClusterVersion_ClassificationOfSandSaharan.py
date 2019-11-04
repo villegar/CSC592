@@ -93,7 +93,7 @@ directories         = glob.glob(ImageLocation + '/*')
 ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
 
 #start with the number of clusters
-NumberOfClusters    = 160;
+NumberOfClusters    = 2;
 NumberOfBands       = 16;
 
 #flag to check whether to increase clusters or not
@@ -218,7 +218,7 @@ while FlagCluster > 0:
             del IndexNonZeroSelect
             InitialCluster[i,] = ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands]
             #np.append(InitialCluster, ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands], axis=0)
-        save(SummaryLocation + '/' + override_file,InitialCluster)
+        save(SummaryLocation + '/' + override_file,'InitialCluster')
     else:
         load(SummaryLocation + '/' + override_file)
         override_init = 0
