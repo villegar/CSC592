@@ -57,49 +57,22 @@ SaveLocation        = 'HighRezFullWorld_100_OutputRun3_Catch'
 SummaryLocation     = 'HighRezFullWorld_100_OutputRun3_Catch_Summary'
 LogLocation	        = 'logs'
 BaseName            = 'HighRezFullWorld_100'
-override_init       = 1; # set to 1 to start init file below...
+override_init       = 1 # set to 1 to start init file below...
 override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.10.24_09.42_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.10.22_03.12_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.10.18_12.52_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.10.14_13.05_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.09.29_09.36_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.09.12_23.55_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.08.13_08.18_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.08.05_11.00_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.08.01_11.39_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.07.29_15.54_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.07.24_00.41_InitialCluster_C160.mat'
-#HighRezFullWorld_100_2019.07.25_17.38_InitialCluster_C160.mat'
-# 'HighRezWorld_2019.04.22_14.43_InitialCluster_C19.mat'
-
 
 directories         = glob.glob(ImageLocation + '/*')
-#
-# for directory = 3:size(directories,1)
-#     ImageList   = dir(fullfile(ImageLocation,directories(directory).name,'L8*'));
-#     ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name)
-#     In = dir(fullfile(ImageLocation_Sub,'L*'));
-#     print(['current size = ',str(len(In)),', added to start size of ',str(InSize)])
-#     InSize = InSize+len(In);
-#
-#     create_job(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster)
-#     print([dateNow(),'starting queue'])
-#     unix('sbatch job.slurm','-echo');
-#     pause(15)
-# end
 
 #ImageList           = glob.glob(ImageLocation + '/NorthAfrica/L8*')
 ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
 
 #start with the number of clusters
-NumberOfClusters    = 160;
-NumberOfBands       = 16;
+NumberOfClusters    = 160
+NumberOfBands       = 16
 
 #flag to check whether to increase clusters or not
-FlagCluster         = 1;
-ThresholdIteration  = 0.0001; #0.0001;
-CountWhile          = 0;
+FlagCluster         = 1
+ThresholdIteration  = 0.0001
+CountWhile          = 0
 
 #local loops in serial, set to 0 to run cluster jobs
 local_version       = 0
@@ -187,13 +160,12 @@ while FlagCluster > 0:
     #Find Random Start location
     ##ImageList       = glob.glob(ImageLocation + '/NorthAfrica/L8*')
     ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
-    #y = rand.sample(range(1,len(ImageList)+1),NumberOfClusters)
-    #y = np.random.choice(len(ImageList),NumberOfClusters)
     y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
-    if override_init == 0:
+    if override_init == 1:
+        ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
         for i in range(0,NumberOfClusters):
-            ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
+            #ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
 
             BinaryMask = ~ np.isnan(ImageIn[:,:,0])
             #linear indices of nonzero values
@@ -202,33 +174,23 @@ while FlagCluster > 0:
 
             #randomly select the speficied number of observations from the list of
             #indices without replacement
-            #IndexNonZeroSelect = IndexNonZero[np.random.choice(len(ImageList),NumberOfClusters-1, replace=False)]
-            #IndexNonZeroSelect = IndexNonZero[np.random.choice(NumberOfClusters-1,len(ImageList), replace=False)]
             IndexNonZeroSelect = IndexNonZero[np.random.randint(0,len(IndexNonZero),NumberOfClusters)]
-            #rows = np.random.randint(1,len(ImageList),NumberOfClusters)
-            #cols = np.random.randint(1,len(ImageList),NumberOfClusters)
-            ###IndexNonZeroSelect = IndexNonZero(datasample(1:length(IndexNonZero),NumberOfClusters,...
-            ###    'Replace',false));
 
             #row and column of the random selected values
-            #[RowSelect, ColumnSelect] = np.unravel_index(len(BinaryMask),IndexNonZeroSelect,, order='F')
-            #[RowSelect, ColumnSelect] = ind2sub(size(BinaryMask),IndexNonZeroSelect);
             RowSelect = IndexNonZeroSelect[:,0]
             ColumnSelect = IndexNonZeroSelect[:,1]
             del BinaryMask
             del IndexNonZero
             del IndexNonZeroSelect
             InitialCluster[i,] = ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands]
-            #np.append(InitialCluster, ImageIn[RowSelect[i],ColumnSelect[i],0:NumberOfBands], axis=0)
         save(SummaryLocation + '/' + override_file,'InitialCluster')
         del RowSelect
         del ColumnSelect
     else:
         load(SummaryLocation + '/' + override_file)
         override_init = 0
-        #InitialCluster
 
-    FlagIteration = 1;
+    FlagIteration = 1
 
     while FlagIteration > ThresholdIteration:
         #NumberOfClusters;

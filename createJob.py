@@ -2,8 +2,6 @@ import os
 from time import sleep
 def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialCluster,fileORlist):
     print('Creating job')
-    #print(len(ImageList))
-    #print(ImageList)
     length = '{}%{:3.0f}'.format(len(ImageList),10+len(ImageList)/32)
     log_name = '%A_%a'
 
