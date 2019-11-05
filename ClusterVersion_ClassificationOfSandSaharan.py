@@ -228,29 +228,20 @@ while FlagCluster > 0:
             ##unix('scancel --user=larry.leigh','-echo')
             Jobs = list()
             for directory in directories:
-            #for directory = 3:size(directories,1)
-                #print(directory)
                 newJob = {
                     'ImageList' : sorted(glob.glob(directory + '/L8*')),
                     'ImageLocation_Sub' : directory
                 }
-                #print(newJob)
                 Jobs.append(newJob)
                 In = sorted(glob.glob(directory + '/L*'))
                 print('Current size = ' + str(len(In)) + ' added to start size of ' + str(InSize))
                 InSize = InSize + len(In)
-                #Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directories(directory).name,'L8*'))
-                #Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directories(directory).name)
-                #In = dir(fullfile(Jobs(directory).ImageLocation_Sub,'L*'))
-                #print(['current size = ',str(len(In)),', added to start size of ',str(InSize)])
-                #InSize = InSize+len(In)
-                createJob(newJob.get('ImageLocation_Sub'),SaveLocation,newJob.get('ImageList'),NumberOfClusters,InitialCluster,0)
+                jobFile = createJob(newJob.get('ImageLocation_Sub'),SaveLocation,newJob.get('ImageList'),NumberOfClusters,InitialCluster,0)
                 print(dateNow() + 'starting queue')
 
                 #shell.call('sbatch job.slurm')
                 ##[s,w] = unix('sbatch job.slurm','-echo')
                 #sleep(30)
-            #end
 
             tic = time.time()
             notequal = 1
@@ -284,14 +275,13 @@ while FlagCluster > 0:
                                 print('current size = ' + str(len(In)) + ', added to start size of ' + str(InSize))
                                 #InSize = InSize+len(In)
 
-                                createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,0)
+                                jobFile = createJob(ImageLocation_Sub,SaveLocation,ImageList,NumberOfClusters,InitialCluster,0)
                                 print(dateNow() + ' starting queue')
 
                                 #shell.call('sbatch job.slurm')
                                 ##[s,w] = unix('sbatch job.slurm','-echo')
                                 #sleep(30)
 
-                                #create_job(Jobs(directory).ImageLocation_Sub,SaveLocation,Jobs(directory).ImageList,NumberOfClusters,InitialCluster,0)
                                 retry = retry + 1
                                 repeated = 0
                                 notequal = 1
