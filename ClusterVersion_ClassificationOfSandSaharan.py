@@ -80,6 +80,9 @@ local_version       = 0
 InitialCluster      = np.empty((0,NumberOfBands), dtype=np.float32)
 username            = 'Roberto.VillegasDiaz'
 
+numCPUs = psutil.cpu_count(logical=False)
+#ray.init(num_cpus=numCPUs)
+print(numCPUs)
 # L8_BA_R030_V4_Lat0030_Lon0006.tif (270)[793]
 #@ray.remote
 def chipClassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
