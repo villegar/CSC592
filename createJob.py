@@ -13,9 +13,9 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
 	#.split('/')[-1]
     if not os.path.exists(jobDirectory):
         os.makedirs(jobDirectory)
-
+    jobFileName = jobDirectory + '/' + jobPrefix + '.slurm'
     #create job
-    with open(jobDirectory + '/' + jobPrefix + '.slurm', 'a') as jobFile:
+    with open(jobFileName, 'a') as jobFile:
         jobFile.write('#!/bin/bash\n')
         jobFile.write('\n')
         jobFile.write('#SBATCH --job-name=ChipS160      # Job name\n')
@@ -74,4 +74,5 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
             elif InitialCluster.shape[1] == 16:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
         jobFile.write('])exit"\n')
-    sleep(1)
+    return(jobFileName)
+    #sleep(1)
