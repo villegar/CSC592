@@ -30,11 +30,11 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		info = gtf_img.meta
 	print(time.time()-tic)
 	#[ImageRow, ImageColumn, NumberOfBands] = len(ImageIn)
-	ImageRow = len(ImageIn[0])
-	ImageColumn = len(ImageIn[1])
-	NumberOfBands = len(ImageIn[2])
+	ImageRow = len(ImageIn)
+	ImageColumn = len(ImageIn[0])
+	NumberOfBands = len(ImageIn[0][0])
 	
-	if NumberOfBands > 8
+	if NumberOfBands > 8:
 		NumberofBands = NumberofBands - 1
 		
 	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
@@ -45,9 +45,28 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print('starting big loop')
 	print(time.time()-tic)
 	
-	for j in range(1, ImageRow)
+	for j in range(1, ImageRow):
 		#display(num2str(100*j/ImageRow))
-		for k in range(1, ImageColumn)
-			temp(:) = ImageIn(j, k, 1:NumberOfBands)
-			EuclideanDistanceResultant(j, k, :) = sqrt(sum())
+		for k in range(1, ImageColumn):
+			temp[:] = ImageIn[j, k, 1:NumberOfBands]
+			EuclideanDistanceResultant[j, k, :] = sqrt(sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster(: ,:)), 2), 2))
+			DistanceNearestCluster = min(EuclideanDistanceResultant)
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
