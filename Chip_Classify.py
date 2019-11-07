@@ -108,4 +108,13 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[1, :]
 		ClusterSdAllBands[i, :] = FinalClusterSd[1, :]
 		
+	filename = SaveLocation + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
+	save(filename, 'ImageDisplay')
 	
+	filename = SaveLocation + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-32:len(ImageFile)-4] + '.tif'
+	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
+	
+	filename = SaveLocation + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
+	save(filename, 'MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse')
+	print('done!')
+	print(time.time()-tic)
