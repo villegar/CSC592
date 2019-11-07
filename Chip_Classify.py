@@ -50,23 +50,62 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		for k in range(1, ImageColumn):
 			temp[:] = ImageIn[j, k, 1:NumberOfBands]
 			EuclideanDistanceResultant[j, k, :] = sqrt(sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster(: ,:)), 2), 2))
-			DistanceNearestCluster = min(EuclideanDistanceResultant)
+			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 		
+			for l in range(1, NumberOfClusters):
+				if DistanceNearestCluster != 0:
+					if DistanceNearestCluster == EuclideanDistanceResultant[j, k, l]:
+						CountClusterPixels[l] = CountClusterPixels[l] + 1
+						for m in range(1, NumberOfBands):
+							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
+						Cluster[i, j, k] = l
+	print('finished big loop')
+	
+	ImageDisplay = np.sum(Cluster, axis = 2)
+	print(time.time() - tic)
+	
+	ClusterPixelCount = np.count_nonzero(Cluster, axis = 2)
+	
+	#Calculate TSSE within clusters
+	TsseCluster = np.zeros((1, NumberOfClusters))
+	CountTemporalUnstablePixel = 0
+	for j in range(1, ImageRow):
+		for k in range(1, ImageColumn):
+			FlagSwitch = max(Cluster[j, k, :])
+			
+			#store SSE of related to each pixel
+			if FlagSwitch == 0:
+				CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
+			else:
+				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(np.power( (np.squeeze(ImageIn[j, k, 1:NumberOfBands]) - InitialCluster[FlagSwitch, :]),2))
+				#count the number of pixels in each cluster
+				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
+	Totalsse = sum(TsseCluster)
+	#get data for final stats....
+	#calculate the spatial mean and standard deviation of each cluster
+	
+	ClusterMeanAllBands = np.zeros((NumberOfClusters, NumberOfBands))
+	ClusterSdAllBands = np.zeros((NUmberOfClusters, NumberOfBands))
+	print('finished small loop')
+	print(time.time()-tic)
+	
+	for i in range(1, NumberOfClusters):
+		Temp = Cluster[:, :, i]
 		
+		Temp[Temp == i] = 1
+			
+		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 1:NumberOfBands])
 		
+		for j in range(1, NumberOfBands):
+			#Mean = MaskedClusterAllBands(:,:,j)
+			Temp = MaskedClusterAllBands(:, :, j)
+			TempNonZero = Temp[Temp != 0]
+			TempNonzeronan = TempNonZero[!np.isnan(TempNonZero)]
+			#TempNonan = Temp[!np.isnan(Temp)]
+			FinalClusterMean[j] = np.mean(tempNonzeronan)
+			FinalClusterSd[j] = np.std(tempNonzeronan)
+			
+		ClusterMeanAllBands[i, :] = FinalClusterMean[1, :]
+		ClusterSdAllBands[i, :] = FinalClusterSd[1, :]
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	
