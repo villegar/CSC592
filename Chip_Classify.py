@@ -1,7 +1,6 @@
 import glob
 import numpy as np
 import os
-import rasterio as rio
 import earthpy as et
 import psutil
 import random as rand
@@ -17,6 +16,11 @@ from PIL import Image
 #for image
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import rasterio as rio
+import geopanda as gpd
+import earthpy as et
+import earthpy.spatial as es
+import earthpy.plot as ep
 
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	tic = time.time()
@@ -27,7 +31,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	ImageIn = mpimg.imread(ImageFile)
 	with rio.open(ImageFile) as gtf_img:
-		info = gtf_img.meta
+		info = gtf_img.profile
 	print(time.time()-tic)
 	#[ImageRow, ImageColumn, NumberOfBands] = len(ImageIn)
 	ImageRow = len(ImageIn)
@@ -115,6 +119,9 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
 
+	with rio.open(filename, 'w', **info) as dst:
+		dst.write(np.int8(ImageDisplay), 1)
+	
 	filename = SaveLocation + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	save(filename, 'MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse')
 	print('done!')
