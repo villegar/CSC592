@@ -67,8 +67,8 @@ if exist(file,'file'):
 #fid = fopen('rerun_results.txt','w');
 count=0;
 shell.call("rm Reprocess_Temp/*")
-for directory in range(3, len(JobsLeft)[2])
-    if ~size(JobsLeft(directory).ImageList,2)==0:
+for directory in range(3, len(JobsLeft)[2]):
+    if !size(JobsLeft(directory).ImageList,2)==0:
         #Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directorys(directory).name,'L8*'));
         #Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directorys(directory).name) %#ok<NOPTS>
         
@@ -76,7 +76,7 @@ for directory in range(3, len(JobsLeft)[2])
 
         
         #In = dir(fullfile(Jobs(directory).ImageLocation_Sub,'L*'));
-        print(['current size = ',num2str(size(JobsLeft(directory).ImageList,1)),', added to start size of ',num2str(InSize)])
+        print(["current size = ",str(len(JobsLeft(directory).ImageList)[1]),', added to start size of ',num2str(InSize)])
         for result in range(1,size(JobsLeft(directory).ImageList,1)):
             #create links to all non-processed results
             shell.call(["ln -s ",fullfile(JobsLeft(directory).ImageList(result).folder,JobsLeft(directory).ImageList(result).name)," Reprocess_Temp/",JobsLeft(directory).ImageList(result).name])
