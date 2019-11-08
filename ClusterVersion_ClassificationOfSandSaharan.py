@@ -165,6 +165,8 @@ while FlagCluster > 0:
     #Find Random Start location
     ##ImageList       = glob.glob(ImageLocation + '/NorthAfrica/L8*')
     ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
+    print(len(ImageList))
+    print(NumberOfClusters)
     y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
     if override_init == 1:
