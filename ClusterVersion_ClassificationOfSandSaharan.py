@@ -57,7 +57,7 @@ SaveLocation        = 'HighRezFullWorld_100_OutputRun3_Catch'
 SummaryLocation     = 'HighRezFullWorld_100_OutputRun3_Catch_Summary'
 LogLocation	        = 'logs'
 BaseName            = 'HighRezFullWorld_100'
-override_init       = 1 # set to 1 to start init file below...
+override_init       = 0 # set to 1 to start init file below...
 override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160.mat'
 
 directories         = glob.glob(ImageLocation + '/*')
@@ -84,9 +84,11 @@ numCPUs = psutil.cpu_count(logical=False)
 #ray.init(num_cpus=numCPUs)
 print(numCPUs)
 # L8_BA_R030_V4_Lat0030_Lon0006.tif (270)[793]
+
+from Chip_Classify import Chip_Classify as chipClassify
 #@ray.remote
-def chipClassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
-    print('Classifying chip')
+#def chipClassify(ImageLocation_Sub,SaveLocation,ChipPath,NumberOfClusters,InitialCluster):
+#    print('Classifying chip')
     #sleep(1)
 
 from createJob import createJob
@@ -242,9 +244,9 @@ while FlagCluster > 0:
                 jobFile = createJob(newJob.get('ImageLocation_Sub'),SaveLocation,newJob.get('ImageList'),NumberOfClusters,InitialCluster,0)
                 print(dateNow() + 'starting queue')
 
-                #shell.call('sbatch job.slurm')
+                shell.call('sbatch ' + jobFile)
                 ##[s,w] = unix('sbatch job.slurm','-echo')
-                #sleep(30)
+                sleep(30)
 
             tic = time.time()
             notequal = 1
