@@ -244,7 +244,8 @@ while FlagCluster > 0:
                 jobFile = createJob(newJob.get('ImageLocation_Sub'),SaveLocation,newJob.get('ImageList'),NumberOfClusters,InitialCluster,0)
                 print(dateNow() + 'starting queue')
 
-                shell.call('sbatch ' + jobFile)
+                proc = shell.Popen(['sbatch ' + jobFile], shell = True)
+                #shell.call('sbatch ' + jobFile)
                 ##[s,w] = unix('sbatch job.slurm','-echo')
                 sleep(30)
 

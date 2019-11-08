@@ -59,20 +59,20 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
 
         jobFile.write('\n')
 
-        jobFile.write('echo matlab -r "Chip_Classify(''{}'', ''{}'',''$files[$SLURM_ARRAY_TASK_ID]'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
+        jobFile.write('echo python -c "from Chip_Classify import Chip_Classify as chipClassify; chipClassify(''{}'', ''{}'',''$files[$SLURM_ARRAY_TASK_ID]'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
         for c in range(1,NumberOfClusters):
             if InitialCluster.shape[1] == 7:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             elif InitialCluster.shape[1] == 16:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
-        jobFile.write('])exit"\n')
+        jobFile.write('])"\n')
 
-        jobFile.write('matlab -r "Chip_Classify(''{}'', ''{}'',''$files[$SLURM_ARRAY_TASK_ID]'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
+        jobFile.write('python -c "from Chip_Classify import Chip_Classify as chipClassify; chipClassify(''{}'', ''{}'',''$files[$SLURM_ARRAY_TASK_ID]'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
         for c in range(1,NumberOfClusters):
             if InitialCluster.shape[1] == 7:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             elif InitialCluster.shape[1] == 16:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
-        jobFile.write('])exit"\n')
+        jobFile.write('])"\n')
     return(jobFileName)
     #sleep(1)
