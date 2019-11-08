@@ -55,7 +55,7 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
         jobFile.write('echo $SLURM_ARRAY_TASK_ID\n')
         jobFile.write('\n')
         jobFile.write('echo "Listing just the elements in the array with the SLURM_ARRAY_TASK_ID"\n')
-        jobFile.write('ImageFile=$(echo ${files[$SLURM_ARRAY_TASK_ID]})')
+        jobFile.write('ImageFile=${files[$SLURM_ARRAY_TASK_ID]}\n')
         jobFile.write('echo $ImageFile\n')
         jobFile.write('# End Diagnostics\n')
 
