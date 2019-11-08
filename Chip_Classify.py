@@ -1,7 +1,6 @@
 import glob
 import numpy as np
 import os
-import rasterio as rio
 import earthpy as et
 import psutil
 import random as rand
@@ -17,6 +16,11 @@ from PIL import Image
 #for image
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import rasterio as rio
+import geopanda as gpd
+import earthpy as et
+import earthpy.spatial as es
+import earthpy.plot as ep
 
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster)
 	tic = time.time()
@@ -49,7 +53,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		#display(num2str(100*j/ImageRow))
 		for k in range(1, ImageColumn):
 			temp[:] = ImageIn[j, k, 1:NumberOfBands]
-			EuclideanDistanceResultant[j, k, :] = sqrt(sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster(: ,:)), 2), 2))
+			EuclideanDistanceResultant[j, k, :] = sqrt(sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), 2))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 		
 			for l in range(1, NumberOfClusters):
@@ -113,6 +117,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	
 	filename = SaveLocation + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-32:len(ImageFile)-4] + '.tif'
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
+	with rio.open(filename, 'w', **naip_meta) as dst:
+		dst.write(np.int8(ImageDisplay), 1)
 	
 	filename = SaveLocation + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	save(filename, 'MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse')
