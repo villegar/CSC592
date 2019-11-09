@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-import glob
 import numpy as np
 import os
-import earthpy as et
-import psutil
 import random as rand
 import ray
 import shelve
-import skimage.io
 import subprocess as shell
 import time
 #from numpy import zeros
@@ -18,12 +14,12 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import rasterio as rio
-import geopanda as gpd
-import earthpy as et
-import earthpy.spatial as es
-import earthpy.plot as ep
+#import geopandas as gpd
+#import earthpy as et
+#import earthpy.spatial as es
+#import earthpy.plot as ep
 
-def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
+def Chip_Classify0(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	print("ChipClassify function")
 	print(ImageLocation)
 	print(SaveLocation)
@@ -32,12 +28,14 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	InitialCluster = np.array(InitialCluster).reshape((NumberOfClusters,-1))
 	print(str(InitialCluster.shape))
 
-def Chip_Classify2(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
+def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	tic = time.time()
 	#Image.show(title=ImageFile)
 	#pause(random('beta',1,1)*30)
 	#Matlab random('beta',1,1) = Python np.random.beta(1,1)
 	time.sleep(np.random.beta(1,1)*30)
+	# Reshape InitialCluster
+	InitialCluster = np.array(InitialCluster).reshape((NumberOfClusters,-1))
 
 	ImageIn = mpimg.imread(ImageFile)
 	with rio.open(ImageFile) as gtf_img:
@@ -131,8 +129,8 @@ def Chip_Classify2(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,Initial
 
 	with rio.open(filename, 'w', **info) as dst:
 		dst.write(np.int8(ImageDisplay), 1)
-	
+
 	filename = SaveLocation + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
-	save(filename, 'MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse')
+	save(filename, ['MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse'])
 	print('done!')
 	print(time.time()-tic)
