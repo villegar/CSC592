@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import glob
 import numpy as np
 import os
@@ -19,6 +20,15 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
+	print("ChipClassify function")
+	print(ImageLocation)
+	print(SaveLocation)
+	print(str(NumberOfClusters))
+	print(len(InitialCluster))
+	InitialCluster = np.array(InitialCluster).reshape((NumberOfClusters,-1))
+	print(str(InitialCluster.shape))
+
+def Chip_Classify2(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	tic = time.time()
 	#Image.show(title=ImageFile)
 	#pause(random('beta',1,1)*30)
