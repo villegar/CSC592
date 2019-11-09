@@ -42,26 +42,30 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	if NumberOfBands > 8:
 		NumberofBands = NumberofBands - 1
 
+	# prealocate
 	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
 	CountClusterPixels = np.zeros((NumberOfClusters, 1))
 	MeanCluster = np.zeros((NumberOfClusters, NumberOfBands))
 	EuclideanDistanceResult = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
-	os.mkdir('local/larry.leigh.temp/')
+	#os.mkdir('local/larry.leigh.temp/')
+	directory = '/tmp/ChipS'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 	print('starting big loop')
 	print(time.time()-tic)
 
-	for j in range(1, ImageRow):
+	for j in range(0, ImageRow):
 		#display(num2str(100*j/ImageRow))
-		for k in range(1, ImageColumn):
+		for k in range(0, ImageColumn):
 			temp[:] = ImageIn[j, k, 1:NumberOfBands]
 			EuclideanDistanceResultant[j, k, :] = sqrt(sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), 2))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
-			for l in range(1, NumberOfClusters):
+			for l in range(0, NumberOfClusters):
 				if DistanceNearestCluster != 0:
 					if DistanceNearestCluster == EuclideanDistanceResultant[j, k, l]:
 						CountClusterPixels[l] = CountClusterPixels[l] + 1
-						for m in range(1, NumberOfBands):
+						for m in range(0, NumberOfBands):
 							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 						Cluster[i, j, k] = l
 	print('finished big loop')
@@ -74,8 +78,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	#Calculate TSSE within clusters
 	TsseCluster = np.zeros((1, NumberOfClusters))
 	CountTemporalUnstablePixel = 0
-	for j in range(1, ImageRow):
-		for k in range(1, ImageColumn):
+	for j in range(0, ImageRow):
+		for k in range(0, ImageColumn):
 			FlagSwitch = max(Cluster[j, k, :])
 
 			#store SSE of related to each pixel
@@ -94,14 +98,14 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print('finished small loop')
 	print(time.time()-tic)
 
-	for i in range(1, NumberOfClusters):
+	for i in range(0, NumberOfClusters):
 		Temp = Cluster[:, :, i]
 
 		Temp[Temp == i] = 1
 
 		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 1:NumberOfBands])
 
-		for j in range(1, NumberOfBands):
+		for j in range(0, NumberOfBands):
 			#Mean = MaskedClusterAllBands(:,:,j)
 			Temp = MaskedClusterAllBands[:, :, j]
 			TempNonZero = Temp[Temp != 0]
