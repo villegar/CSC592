@@ -43,7 +43,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
 
 	if NumberOfBands > 8:
-		NumberofBands = NumberofBands - 1
+		NumberOfBands = NumberOfBands - 1
 
 	# prealocate
 	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
