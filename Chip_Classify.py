@@ -10,6 +10,7 @@ import time
 from datetime import datetime
 from math import sqrt
 from PIL import Image
+from utils import save
 #for image
 import matplotlib.pyplot as plt
 from skimage.io import imread
@@ -57,8 +58,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	for j in range(0, ImageRow):
 		#display(num2str(100*j/ImageRow))
 		for k in range(0, ImageColumn):
-			temp[:] = ImageIn[j, k, 1:NumberOfBands]
-			EuclideanDistanceResultant[j, k, :] = sqrt(sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), 2))
+			temp = ImageIn[j, k, 0:NumberOfBands]
+			EuclideanDistanceResultant[j, k, ] = sqrt(sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), 2))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
 			for l in range(0, NumberOfClusters):
@@ -86,7 +87,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 			if FlagSwitch == 0:
 				CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
 			else:
-				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(np.power( (np.squeeze(ImageIn[j, k, 1:NumberOfBands]) - InitialCluster[FlagSwitch, :]),2))
+				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - InitialCluster[FlagSwitch, :]),2))
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
 	Totalsse = sum(TsseCluster)
@@ -103,7 +104,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 		Temp[Temp == i] = 1
 
-		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 1:NumberOfBands])
+		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands])
 
 		for j in range(0, NumberOfBands):
 			#Mean = MaskedClusterAllBands(:,:,j)
