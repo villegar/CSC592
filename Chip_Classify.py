@@ -12,7 +12,7 @@ from math import sqrt
 from PIL import Image
 #for image
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+from skimage.io import imread
 import rasterio as rio
 #import geopandas as gpd
 #import earthpy as et
@@ -30,14 +30,10 @@ def Chip_Classify0(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,Initial
 
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	tic = time.time()
-	#Image.show(title=ImageFile)
-	#pause(random('beta',1,1)*30)
-	#Matlab random('beta',1,1) = Python np.random.beta(1,1)
-	time.sleep(np.random.beta(1,1)*30)
+	sleep(np.random.beta(1,1)*30)
 	# Reshape InitialCluster
 	InitialCluster = np.array(InitialCluster).reshape((NumberOfClusters,-1))
-
-	ImageIn = mpimg.imread(ImageFile)
+	ImageIn = imread(ImageFile)
 	with rio.open(ImageFile) as gtf_img:
 		info = gtf_img.profile
 	print(time.time()-tic)
