@@ -37,10 +37,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	with rio.open(ImageFile) as gtf_img:
 		info = gtf_img.profile
 	print(time.time()-tic)
-	#[ImageRow, ImageColumn, NumberOfBands] = len(ImageIn)
-	ImageRow = len(ImageIn)
-	ImageColumn = len(ImageIn[0])
-	NumberOfBands = len(ImageIn[0][0])
+	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
 
 	if NumberOfBands > 8:
 		NumberofBands = NumberofBands - 1
