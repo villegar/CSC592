@@ -50,8 +50,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	EuclideanDistanceResult = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
 	#os.mkdir('local/larry.leigh.temp/')
 	directory = '/tmp/ChipS'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+        if not os.path.exists(directory):
+                os.makedirs(directory)
 	print('starting big loop')
 	print(time.time()-tic)
 
