@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 from math import sqrt
 from PIL import Image
-from utils import save
+from utils import save, progbar
 from time import sleep
 
 #for image
@@ -60,7 +60,9 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	for j in range(0, ImageRow):
 		#display(num2str(100*j/ImageRow))
-		print('Progress: ' + str(100*j/ImageRow) + '%')
+		if(j % 100 ==0):
+			progbar(j, ImageRow)
+		#print('Progress: ' + str(100*j/ImageRow) + '%')
 		for k in range(0, ImageColumn):
 			temp = ImageIn[j, k, 0:NumberOfBands]
 			EuclideanDistanceResultant[j, k, ] = np.sqrt(np.sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
