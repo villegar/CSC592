@@ -75,6 +75,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 						for m in range(0, NumberOfBands):
 							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 						Cluster[j, k, l] = l
+	progbar(ImageRow, ImageRow)
 	print('\nfinished big loop')
 
 	ImageDisplay = np.sum(Cluster, axis = 2)
@@ -88,12 +89,13 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	for j in range(0, ImageRow):
 		for k in range(0, ImageColumn):
 			FlagSwitch = int(max(Cluster[j, k, :]))
+			print(Cluster[j, k, :])
 
 			#store SSE of related to each pixel
 			if FlagSwitch == 0:
 				CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
 			else:
-				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
+				TsseCluster[0,FlagSwitch] = TsseCluster[FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
 	Totalsse = np.sum(TsseCluster)
