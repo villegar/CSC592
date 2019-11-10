@@ -50,7 +50,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
 	CountClusterPixels = np.zeros((NumberOfClusters, 1))
 	MeanCluster = np.zeros((NumberOfClusters, NumberOfBands))
-	EuclideanDistanceResult = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
+	EuclideanDistanceResultant = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
 	#os.mkdir('local/larry.leigh.temp/')
 	directory = '/tmp/ChipS'
 	if not os.path.exists(directory):
