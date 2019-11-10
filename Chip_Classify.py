@@ -60,6 +60,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	for j in range(0, ImageRow):
 		#display(num2str(100*j/ImageRow))
+		print('Progress: ' + str(100*j/ImageRow) + '%')
 		for k in range(0, ImageColumn):
 			temp = ImageIn[j, k, 0:NumberOfBands]
 			EuclideanDistanceResultant[j, k, ] = np.sqrt(np.sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
@@ -90,10 +91,10 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 			if FlagSwitch == 0:
 				CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
 			else:
-				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - InitialCluster[FlagSwitch, :]),2))
+				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
-	Totalsse = sum(TsseCluster)
+	Totalsse = np.sum(TsseCluster)
 	#get data for final stats....
 	#calculate the spatial mean and standard deviation of each cluster
 
