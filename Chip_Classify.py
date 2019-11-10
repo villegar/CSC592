@@ -60,7 +60,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	for j in range(0, ImageRow):
 		#display(num2str(100*j/ImageRow))
-		if(j % 100 ==0):
+		if(j % 10 == 0):
 			progbar(j, ImageRow)
 		#print('Progress: ' + str(100*j/ImageRow) + '%')
 		for k in range(0, ImageColumn):
@@ -75,7 +75,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 						for m in range(0, NumberOfBands):
 							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 						Cluster[j, k, l] = l
-	print('finished big loop')
+	print('\nfinished big loop')
 
 	ImageDisplay = np.sum(Cluster, axis = 2)
 	print(time.time() - tic)
@@ -87,7 +87,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	CountTemporalUnstablePixel = 0
 	for j in range(0, ImageRow):
 		for k in range(0, ImageColumn):
-			FlagSwitch = max(Cluster[j, k, :])
+			FlagSwitch = int(max(Cluster[j, k, :]))
 
 			#store SSE of related to each pixel
 			if FlagSwitch == 0:
