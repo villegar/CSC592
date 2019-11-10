@@ -71,7 +71,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 						CountClusterPixels[l] = CountClusterPixels[l] + 1
 						for m in range(0, NumberOfBands):
 							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
-						Cluster[i, j, k] = l
+						Cluster[j, k, l] = l
 	print('finished big loop')
 
 	ImageDisplay = np.sum(Cluster, axis = 2)
