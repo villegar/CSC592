@@ -147,6 +147,15 @@ def save(filename, variables):
     newShelf.close()
     # Reference: https://stackoverflow.com/questions/2960864/how-can-i-save-all-the-variables-in-the-current-python-session
 
+def sbatch(jobFile, dependency):
+    if(dependency == ''):
+        proc = shell.Popen(['sbatch ' + jobFile], shell = True, stdout = shell.PIPE)
+    else:
+        proc = shell.Popen(['sbatch --dependency=afterok:' + dependency + ' ' + jobFile], shell = True, stdout = shell.PIPE)
+    result = str(proc.communicate()[0].decode('ascii').strip())
+    print(result)
+    return(result.split(' ')[-1])
+
 while FlagCluster > 0:
     NumberOfClusters
     CountWhile      = CountWhile + 1
@@ -165,6 +174,8 @@ while FlagCluster > 0:
     #Find Random Start location
     ##ImageList       = glob.glob(ImageLocation + '/NorthAfrica/L8*')
     ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
+    print(len(ImageList))
+    print(NumberOfClusters)
     y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
     if override_init == 1:
@@ -232,6 +243,7 @@ while FlagCluster > 0:
             #shell.call('scancel --user=' + username)
             ##unix('scancel --user=larry.leigh','-echo')
             Jobs = list()
+            JobID = ''
             for directory in directories:
                 newJob = {
                     'ImageList' : sorted(glob.glob(directory + '/L8*')),
@@ -244,10 +256,11 @@ while FlagCluster > 0:
                 jobFile = createJob(newJob.get('ImageLocation_Sub'),SaveLocation,newJob.get('ImageList'),NumberOfClusters,InitialCluster,0)
                 print(dateNow() + 'starting queue')
 
-                proc = shell.Popen(['sbatch ' + jobFile], shell = True)
+                JobID = sbatch(jobFile, JobID)
+                #proc = shell.Popen(['sbatch ' + jobFile], shell = True)
                 #shell.call('sbatch ' + jobFile)
                 ##[s,w] = unix('sbatch job.slurm','-echo')
-                sleep(30)
+                #sleep(30)
 
             tic = time.time()
             notequal = 1
