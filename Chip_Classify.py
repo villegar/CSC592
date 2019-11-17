@@ -42,13 +42,13 @@ def EuclideanDistance(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberO
 	CountClusterPixels = np.zeros((NumberOfClusters, 1))
 	MeanCluster = np.zeros((NumberOfClusters, NumberOfBands))
 	EuclideanDistanceResultant = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
-	for k in range(0, ImageColumn):
+	for k in range(0, ImageColumn - 1):
 		temp = ImageIn[j, k, 0:NumberOfBands]
 		#print("Inner loop: ({},{})".format(j,k))
 		EuclideanDistanceResultant[j, k, ] = np.sqrt(np.sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
 		DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
-		for l in range(0, NumberOfClusters):
+		for l in range(0, NumberOfClusters - 1):
 			if DistanceNearestCluster != 0:
 				if DistanceNearestCluster == EuclideanDistanceResultant[j, k, l]:
 					CountClusterPixels[l] = CountClusterPixels[l] + 1
@@ -84,7 +84,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print(time.time()-tic)
 
 	#Cluster = np.zeros((1, ImageColumn, NumberOfClusters)) # For Ray
-	for j in range(0, ImageRow):
+	for j in range(0, ImageRow - 1):
 		#display(num2str(100*j/ImageRow))
 		if(j % 10 == 0):
 			progbar(j, ImageRow)
@@ -96,16 +96,16 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		#else:
 		#	Cluster = np.concatenate((Cluster, np.zeros((1, ImageColumn, NumberOfClusters))))
 
-		for k in range(0, ImageColumn):
+		for k in range(0, ImageColumn - 1):
 			temp = ImageIn[j, k, 0:NumberOfBands]
 			EuclideanDistanceResultant[j, k, ] = np.sqrt(np.sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
-			for l in range(0, NumberOfClusters):
+			for l in range(0, NumberOfClusters - 1):
 				if DistanceNearestCluster != 0:
 					if DistanceNearestCluster == EuclideanDistanceResultant[j, k, l]:
 						CountClusterPixels[l] = CountClusterPixels[l] + 1
-						for m in range(0, NumberOfBands):
+						for m in range(0, NumberOfBands - 1):
 							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 						Cluster[j, k, l] = l
 	progbar(ImageRow, ImageRow)
@@ -120,8 +120,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	TsseCluster = np.zeros((1, NumberOfClusters))
 	CountTemporalUnstablePixel = 0
 
-	for j in range(0, ImageRow):
-		for k in range(0, ImageColumn):
+	for j in range(0, ImageRow - 1):
+		for k in range(0, ImageColumn - 1):
 			FlagSwitch = int(max(Cluster[j, k, :]))
 			print(Cluster[j, k, :])
 
@@ -141,14 +141,14 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print('finished small loop')
 	print(time.time()-tic)
 
-	for i in range(0, NumberOfClusters):
+	for i in range(0, NumberOfClusters - 1):
 		Temp = Cluster[:, :, i]
 
 		Temp[Temp == i] = 1
 
 		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands])
 
-		for j in range(0, NumberOfBands):
+		for j in range(0, NumberOfBands - 1):
 			#Mean = MaskedClusterAllBands(:,:,j)
 			Temp = MaskedClusterAllBands[:, :, j]
 			TempNonZero = Temp[Temp != 0]
