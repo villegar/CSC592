@@ -129,7 +129,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 			if FlagSwitch == 0:
 				CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
 			else:
-				TsseCluster[0,FlagSwitch] = TsseCluster[0,FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
+				#Might be TsseCluster[0,FlagSwitch-1]
+				TsseCluster[0,FlagSwitch] = TsseCluster[0,FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
 	Totalsse = np.sum(TsseCluster)
@@ -146,7 +147,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 		Temp[Temp == i] = 1
 
-		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands])
+		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
 
 		for j in range(0, NumberOfBands - 1):
 			#Mean = MaskedClusterAllBands(:,:,j)
@@ -160,17 +161,17 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[1, :]
 		ClusterSdAllBands[i, :] = FinalClusterSd[1, :]
 
-	filename = SaveLocation + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
+	filename = SaveLocation + 'ImageDisplay_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
 	save(filename, 'ImageDisplay')
 
-	filename = SaveLocation + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-32:len(ImageFile)-4] + '.tif'
+	filename = SaveLocation + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-33:len(ImageFile)-5] + '.tif'
 
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
 
 	with rio.open(filename, 'w', **info) as dst:
 		dst.write(np.int8(ImageDisplay), 1)
 
-	filename = SaveLocation + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
+	filename = SaveLocation + 'Stats_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
 	save(filename, ['MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse'])
 	print('done!')
 	print(time.time()-tic)
