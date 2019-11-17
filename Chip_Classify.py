@@ -45,7 +45,7 @@ def EuclideanDistance(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberO
 	for k in range(0, ImageColumn - 1):
 		temp = ImageIn[j, k, 0:NumberOfBands]
 		#print("Inner loop: ({},{})".format(j,k))
-		EuclideanDistanceResultant[j, k, ] = np.sqrt(np.sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
+		EuclideanDistanceResultant[j, k, :] = np.sqrt(np.sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
 		DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
 		for l in range(0, NumberOfClusters - 1):
