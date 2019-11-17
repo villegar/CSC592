@@ -147,7 +147,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 		Temp[Temp == i] = 1
 
-		MaskedClusterAllBands = np.apply_along_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
+		MaskedClusterAllBands = np.apply_over_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
 
 		for j in range(0, NumberOfBands - 1):
 			#Mean = MaskedClusterAllBands(:,:,j)
@@ -161,17 +161,17 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[1, :]
 		ClusterSdAllBands[i, :] = FinalClusterSd[1, :]
 
-	filename = SaveLocation + 'ImageDisplay_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
+	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
 	save(filename, 'ImageDisplay')
 
-	filename = SaveLocation + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-33:len(ImageFile)-5] + '.tif'
+	filename = str(SaveLocation) + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-33:len(ImageFile)-5] + '.tif'
 
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
 
 	with rio.open(filename, 'w', **info) as dst:
 		dst.write(np.int8(ImageDisplay), 1)
 
-	filename = SaveLocation + 'Stats_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
+	filename = str(SaveLocation) + 'Stats_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
 	save(filename, ['MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse'])
 	print('done!')
 	print(time.time()-tic)
