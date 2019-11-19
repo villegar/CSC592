@@ -182,11 +182,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 		Temp[Temp == i] = 1
 
-<<<<<<< HEAD
-		MaskedClusterAllBands = np.apply_over_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands])
-=======
 		MaskedClusterAllBands = np.apply_over_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
->>>>>>> ceedebf5fb75ca11d3796e5e227f98fefac9e6c1
+
 
 		for j in range(0, NumberOfBands - 1):
 			#Mean = MaskedClusterAllBands(:,:,j)
