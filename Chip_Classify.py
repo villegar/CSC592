@@ -132,7 +132,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 			else:
 				#Might be TsseCluster[0,FlagSwitch-1]
 				#TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power(np.subtract(np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]), np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
-				TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]) - np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
+				TsseCluster[FlagSwitch - 1] = TsseCluster[FlagSwitch - 1] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]) - np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
 	Totalsse = np.sum(TsseCluster)
