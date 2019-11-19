@@ -1,5 +1,27 @@
 #!/usr/bin/env python3
-import numpy as np
+#import numpy as np
+
+#-------------------
+from numpy import zeros
+from numpy import sqrt
+from numpy.array import reshape
+from numpy import sum
+from numpy.matlib import repmat
+from numpy import power
+from numpy import count_nonzero
+from numpy import squeeze
+from numpy import transpose
+from numpy import apply_over_axes
+from numpy import multiply
+from numpy import isnan
+from numpy import mean
+from numpy import std
+from numpy import int8
+from numpy.random import beta
+
+#-------------------
+
+
 import numpy.matlib
 import os
 import random as rand
@@ -160,7 +182,11 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 		Temp[Temp == i] = 1
 
+<<<<<<< HEAD
+		MaskedClusterAllBands = np.apply_over_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands])
+=======
 		MaskedClusterAllBands = np.apply_over_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
+>>>>>>> ceedebf5fb75ca11d3796e5e227f98fefac9e6c1
 
 		for j in range(0, NumberOfBands - 1):
 			#Mean = MaskedClusterAllBands(:,:,j)
