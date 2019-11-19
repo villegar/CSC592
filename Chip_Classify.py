@@ -153,12 +153,12 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 				CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
 			else:
         
-				print("len(TsseCluster[0,FlagSwitch])");
-				print(len(TsseCluster[0,FlagSwitch]));
-				print("len(InitialCluster[FlagSwitch, :])");
-				print(len(InitialCluster[FlagSwitch, :]));
-				print("len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])");
-				print(len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])));
+				#print("len(TsseCluster[0,FlagSwitch])");
+				#print(len(TsseCluster[0,FlagSwitch]));
+				#print("len(InitialCluster[FlagSwitch, :])");
+				#print(len(InitialCluster[FlagSwitch, :]));
+				#print("len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])");
+				#print(len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])));
 			
 				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
 
