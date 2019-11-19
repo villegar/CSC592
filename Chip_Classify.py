@@ -4,9 +4,9 @@
 #-------------------
 from numpy import zeros
 from numpy import sqrt
-from numpy import array.reshape
+from numpy import array
 from numpy import sum
-from numpy import matlib.repmat
+from numpy import matlib
 from numpy import power
 from numpy import count_nonzero
 from numpy import squeeze
@@ -17,7 +17,7 @@ from numpy import isnan
 from numpy import mean
 from numpy import std
 from numpy import int8
-from numpy import random.beta
+from numpy import random
 
 #-------------------
 
