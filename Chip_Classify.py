@@ -81,9 +81,9 @@ def EuclideanDistance(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberO
 
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	tic = time.time()
-	sleep(np.random.beta(1,1)*30)
+	sleep(random.beta(1,1)*30)
 	# Reshape InitialCluster
-	InitialCluster = np.array(InitialCluster).reshape((NumberOfClusters,-1))
+	InitialCluster = array(InitialCluster).reshape((NumberOfClusters,-1))
 	ImageIn = imread(ImageFile)
 	with rio.open(ImageFile) as gtf_img:
 		info = gtf_img.profile
@@ -94,10 +94,10 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		NumberOfBands = NumberOfBands - 1
 
 	# prealocate
-	Cluster = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
-	CountClusterPixels = np.zeros((NumberOfClusters, 1))
-	MeanCluster = np.zeros((NumberOfClusters, NumberOfBands))
-	EuclideanDistanceResultant = np.zeros((ImageRow, ImageColumn, NumberOfClusters))
+	Cluster = zeros((ImageRow, ImageColumn, NumberOfClusters))
+	CountClusterPixels = zeros((NumberOfClusters, 1))
+	MeanCluster = zeros((NumberOfClusters, NumberOfBands))
+	EuclideanDistanceResultant = zeros((ImageRow, ImageColumn, NumberOfClusters))
 	#os.mkdir('local/larry.leigh.temp/')
 	directory = '/tmp/ChipS'
 	if not os.path.exists(directory):
@@ -121,7 +121,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		for k in range(0, ImageColumn - 1):
 			temp = ImageIn[j, k, 0:NumberOfBands]
 			#EuclideanDistanceResultant[j, k, ] = np.sqrt(np.sum(np.power(np.subtract(np.matlib.repmat(temp, NumberOfClusters, 1), InitialCluster[: ,:]), 2), axis = 1))
-			EuclideanDistanceResultant[j, k, ] = np.sqrt(np.sum(np.power((np.matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
+			EuclideanDistanceResultant[j, k, ] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
 			for l in range(0, NumberOfClusters - 1):
@@ -137,10 +137,10 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	ImageDisplay = np.sum(Cluster, axis = 2)
 	print(time.time() - tic)
 
-	ClusterPixelCount = np.count_nonzero(Cluster, axis = 2)
+	ClusterPixelCount = count_nonzero(Cluster, axis = 2)
 
 	#Calculate TSSE within clusters
-	TsseCluster = np.zeros((1, NumberOfClusters))
+	TsseCluster = zeros((1, NumberOfClusters))
 	CountTemporalUnstablePixel = 0
 
 	for j in range(0, ImageRow - 1):
@@ -160,20 +160,20 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 				#print("len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])");
 				#print(len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])));
 			
-				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
+				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(power( (squeeze(ImageIn[j, k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
 
 				#Might be TsseCluster[0,FlagSwitch-1]
 				#TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power(np.subtract(np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]), np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
-				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + np.sum(np.power( (np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]) - np.transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
+				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(power( (squeeze(ImageIn[j, k, 0:NumberOfBands - 1]) - transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
 
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
-	Totalsse = np.sum(TsseCluster)
+	Totalsse = sum(TsseCluster)
 	#get data for final stats....
 	#calculate the spatial mean and standard deviation of each cluster
 
-	ClusterMeanAllBands = np.zeros((NumberOfClusters, NumberOfBands))
-	ClusterSdAllBands = np.zeros((NUmberOfClusters, NumberOfBands))
+	ClusterMeanAllBands = zeros((NumberOfClusters, NumberOfBands))
+	ClusterSdAllBands = zeros((NUmberOfClusters, NumberOfBands))
 	print('finished small loop')
 	print(time.time()-tic)
 
@@ -182,17 +182,17 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 		Temp[Temp == i] = 1
 
-		MaskedClusterAllBands = np.apply_over_axes(np.multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
+		MaskedClusterAllBands = apply_over_axes(multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
 
 
 		for j in range(0, NumberOfBands - 1):
 			#Mean = MaskedClusterAllBands(:,:,j)
 			Temp = MaskedClusterAllBands[:, :, j]
 			TempNonZero = Temp[Temp != 0]
-			TempNonzeronan = TempNonZero[not np.isnan(TempNonZero)]
+			TempNonzeronan = TempNonZero[not isnan(TempNonZero)]
 			#TempNonan = Temp[!np.isnan(Temp)]
-			FinalClusterMean[j] = np.mean(tempNonzeronan)
-			FinalClusterSd[j] = np.std(tempNonzeronan)
+			FinalClusterMean[j] = mean(tempNonzeronan)
+			FinalClusterSd[j] = std(tempNonzeronan)
 
 		ClusterMeanAllBands[i, :] = FinalClusterMean[1, :]
 		ClusterSdAllBands[i, :] = FinalClusterSd[1, :]
@@ -205,7 +205,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
 
 	with rio.open(filename, 'w', **info) as dst:
-		dst.write(np.int8(ImageDisplay), 1)
+		dst.write(int8(ImageDisplay), 1)
 
 	filename = str(SaveLocation) + 'Stats_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
 	save(filename, ['MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse'])
