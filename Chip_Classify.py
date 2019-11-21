@@ -145,7 +145,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	for j in range(0, ImageRow - 1):
 		for k in range(0, ImageColumn - 1):
 			FlagSwitch = int(max(Cluster[j, k, :]))
-			print(Cluster[j, k, :])
+			#print(Cluster[j, k, :]) #This prints to the log
 
 			#store SSE of related to each pixel
 			if FlagSwitch == 0:
