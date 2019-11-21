@@ -88,6 +88,9 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		info = gtf_img.profile
 	print(time.time()-tic)
 	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
+	
+	print('NumberOfBands')
+	print(NumberOfBands)
 
 	if NumberOfBands > 8:
 		NumberOfBands = NumberOfBands - 1
