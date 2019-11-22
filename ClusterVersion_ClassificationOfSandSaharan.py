@@ -66,8 +66,8 @@ directories         = glob.glob(ImageLocation + '/*')
 ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
 
 #start with the number of clusters
-NumberOfClusters    = 160
-NumberOfBands       = 16
+NumberOfClusters    = 159 #was 160
+NumberOfBands       = 15 #was 16
 
 #flag to check whether to increase clusters or not
 FlagCluster         = 1
