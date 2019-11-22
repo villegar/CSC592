@@ -87,10 +87,10 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	with rio.open(ImageFile) as gtf_img:
 		info = gtf_img.profile
 	print(time.time()-tic)
+	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
 
 	if NumberOfBands > 8:
 		NumberOfBands = NumberOfBands - 1
-	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
 
 	# prealocate
 	Cluster = zeros((ImageRow, ImageColumn, NumberOfClusters))
@@ -118,8 +118,6 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		#	Cluster = np.concatenate((Cluster, np.zeros((1, ImageColumn, NumberOfClusters))))
 
 		for k in range(0, ImageColumn - 1):
-			print('ImageIn[j,k,:]')
-			print(ImageIn[j,k,:])
 			temp = ImageIn[j, k, 0:NumberOfBands-1]
 			#EuclideanDistanceResultant[j, k, :] = np.sqrt(np.sum(np.power(np.subtract(np.matlib.repmat(temp, NumberOfClusters, 1), InitialCluster[: ,:]), 2), axis = 1))
 			EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2), axis = 1))
