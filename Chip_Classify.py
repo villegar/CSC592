@@ -89,8 +89,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print(time.time()-tic)
 	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
 	
-	print('NumberOfBands')
-	print(NumberOfBands)
+	print('NumberOfClusters')
+	print(NumberOfClusters)
 
 	if NumberOfBands > 8:
 		NumberOfBands = NumberOfBands - 1
