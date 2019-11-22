@@ -64,7 +64,7 @@ directories         = glob.glob(ImageLocation + '/*')
 
 #ImageList           = glob.glob(ImageLocation + '/NorthAfrica/L8*')
 ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
-
+print("we are in the main file\n\n\n\n\n\n\n\n\n\n");
 #start with the number of clusters
 NumberOfClusters    = 159 #was 160
 NumberOfBands       = 15 #was 16
