@@ -30,7 +30,7 @@ import subprocess as shell
 import time
 #from numpy import zeros
 from datetime import datetime
-from math import sqrt
+#from math import sqrt
 from PIL import Image
 from utils import save, progbar
 from time import sleep
@@ -88,10 +88,10 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		info = gtf_img.profile
 	print(time.time()-tic)
 	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
-
+	print(NumberOfBands)
 	if NumberOfBands > 8:
 		NumberOfBands = NumberOfBands - 1
-
+	print(NumberOfBands)
 	# prealocate
 	Cluster = zeros((ImageRow, ImageColumn, NumberOfClusters))
 	CountClusterPixels = zeros((NumberOfClusters, 1))
@@ -118,7 +118,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		#	Cluster = np.concatenate((Cluster, np.zeros((1, ImageColumn, NumberOfClusters))))
 
 		for k in range(0, ImageColumn - 1):
-			temp = ImageIn[j, k, 0:NumberOfBands-1]
+			temp = ImageIn[j, k, 0:NumberOfBands]
 			#EuclideanDistanceResultant[j, k, :] = np.sqrt(np.sum(np.power(np.subtract(np.matlib.repmat(temp, NumberOfClusters, 1), InitialCluster[: ,:]), 2), axis = 1))
 			EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2), axis = 1))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
