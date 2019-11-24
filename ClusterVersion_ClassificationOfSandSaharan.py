@@ -60,10 +60,10 @@ BaseName            = 'HighRezFullWorld_100'
 override_init       = 0 # set to 1 to start init file below...
 override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160.mat'
 
-directories         = glob.glob(ImageLocation + '/*')
+directories         = glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lon0024.tif') #was + '/*')
 
 #ImageList           = glob.glob(ImageLocation + '/NorthAfrica/L8*')
-ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/Other/L8*')]
+ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lon0024.tif')] #was + '/Other/L8*')]
 print("we are in the main file\n\n\n\n\n\n\n\n\n\n");
 #start with the number of clusters
 NumberOfClusters    = 159 #was 160
