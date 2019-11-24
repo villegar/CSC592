@@ -58,7 +58,7 @@ for complete in range(0,len(Out[0])-1):
                     break
                 
 print "done sorting"
-shell.call("scancel --user=larry.leigh","-echo");
+shell.call("scancel --user=adstoll55653","-echo");
 save('JobsRESumbitted_finished.mat','JobsLeft')
 #delete(fullfile(LogLocation,'*'))
 file="rerun_results.txt";

@@ -67,7 +67,7 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
         for c in range(0,NumberOfClusters - 1):
             if InitialCluster.shape[1] == 7:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
-            elif InitialCluster.shape[1] == 16:
+            elif InitialCluster.shape[1] == 16:	#was 16, changed based on NumberOfBands
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             if c < NumberOfClusters - 1:
                 jobFile.write(', ')
@@ -79,7 +79,7 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
         for c in range(0,NumberOfClusters - 1):
             if InitialCluster.shape[1] == 7:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
-            elif InitialCluster.shape[1] == 16:
+            elif InitialCluster.shape[1] == 16: #was 16, changed based on NumberOfBands
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             if c < NumberOfClusters - 1:
                 jobFile.write(', ')
