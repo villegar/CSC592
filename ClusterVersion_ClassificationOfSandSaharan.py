@@ -48,7 +48,7 @@ import subprocess as shell
 import time
 #from numpy import zeros
 from datetime import datetime
-from math import sqrt
+#from math import sqrt
 from PIL import Image
 from time import sleep
 
@@ -60,10 +60,10 @@ BaseName            = 'HighRezFullWorld_100'
 override_init       = 0 # set to 1 to start init file below...
 override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160.mat'
 
-directories         = glob.glob(ImageLocation + '/*')
+directories         = glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lon0024.tif') #was + '/*')
 
 #ImageList           = glob.glob(ImageLocation + '/NorthAfrica/L8*')
-ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
+ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lon0024.tif')] #was + '/Other/L8*')]
 print("we are in the main file\n\n\n\n\n\n\n\n\n\n");
 #start with the number of clusters
 NumberOfClusters    = 159 #was 160
@@ -173,15 +173,15 @@ while FlagCluster > 0:
 
     #Find Random Start location
     ##ImageList       = glob.glob(ImageLocation + '/NorthAfrica/L8*')
-    ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/NorthAfrica/L8*')]
+    ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/Other/L8*')]
     print(len(ImageList))
     print(NumberOfClusters)
     y = np.random.randint(0,len(ImageList),NumberOfClusters)
 
-    if override_init == 1:
-        ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
+    if override_init == 0:
+        #ImageIn = skimage.io.imread(ImageLocation + '/Other/' + ImageList[y[NumberOfClusters - 1]])
         for i in range(0,NumberOfClusters):
-            #ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
+            ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
 
             BinaryMask = ~ np.isnan(ImageIn[:,:,0])
             #linear indices of nonzero values
