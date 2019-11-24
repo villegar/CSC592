@@ -42,17 +42,18 @@ def save(filename, variables):
 JobsLeft=Jobs;
 found=0;
 print "starting: find missing jobs"
-for complete in range(1,len(Out)[1]):
+for complete in range(0,len(Out[0])-1):
     #disp(complete)
-    for Job in range(3,len(JobsLeft)[2]):
+    for Job in range(2,len(JobsLeft[1])-1):
         #display(Job)
 #         for complete=1:size(Out,1)
 #             complete
-            for subjob in range(1,len(JobsLeft)[Job].ImageList,1)):
-                if !size(JobsLeft(Job).ImageList,2)==0:
-                if Out(complete).name(end-32:end-4)==JobsLeft(Job).ImageList(subjob).name(1:end-4)):
+            #for subjob in range(1,len(JobsLeft)[Job].ImageList,1)):
+            for subjob in range(0, len(JobsLeft[Job].ImageList[0])-1):
+                if !len(JobsLeft[Job].ImageList[1])==0:
+                if Out[complete].name[end-33:end-5]==JobsLeft[Job].ImageList[subjob].name[0:end-5]):
                     #disp(['found: ',Out(complete).name(end-32:end-4),' ',JobsLeft(Job).ImageList(subjob).name(1:end-4)])
-                    JobsLeft(Job).ImageList(subjob)=[];
+                    JobsLeft[Job].ImageList[subjob]=[];
                     found=found+1;
                     break
                 
@@ -67,8 +68,8 @@ if exist(file,'file'):
 #fid = fopen('rerun_results.txt','w');
 count=0;
 shell.call("rm Reprocess_Temp/*")
-for directory in range(3, len(JobsLeft)[2]):
-    if !size(JobsLeft(directory).ImageList,2)==0:
+for directory in range(2, len(JobsLeft[1])-1):
+    if !len(JobsLeft[directory].ImageList[1])==0:
         #Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directorys(directory).name,'L8*'));
         #Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directorys(directory).name) %#ok<NOPTS>
         
@@ -76,10 +77,10 @@ for directory in range(3, len(JobsLeft)[2]):
 
         
         #In = dir(fullfile(Jobs(directory).ImageLocation_Sub,'L*'));
-        print(["current size = ",str(len(JobsLeft(directory).ImageList)[1]),', added to start size of ',num2str(InSize)])
-        for result in range(1,size(JobsLeft(directory).ImageList,1)):
+        print(["current size = ",str(len(JobsLeft[directory].ImageList[0])),', added to start size of ',num2str(InSize)])
+        for result in range(0,len(JobsLeft[directory].ImageList[0])-1):
             #create links to all non-processed results
-            shell.call(["ln -s ",fullfile(JobsLeft(directory).ImageList(result).folder,JobsLeft(directory).ImageList(result).name)," Reprocess_Temp/",JobsLeft(directory).ImageList(result).name])
+            shell.call(["ln -s ",fullfile(JobsLeft[directory].ImageList[result].folder,JobsLeft[directory].ImageList[result].name)," Reprocess_Temp/",JobsLeft[directory].ImageList[result].name])
             
             count=count+1;
 #             ImageListForSubFolder{1,count}=fullfile(JobsLeft(directory).ImageList(result).folder,JobsLeft(directory).ImageList(result).name);

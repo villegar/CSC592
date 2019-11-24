@@ -118,13 +118,10 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		#	Cluster = np.concatenate((Cluster, np.zeros((1, ImageColumn, NumberOfClusters))))
 
 		for k in range(0, ImageColumn - 1):
-
 			temp = ImageIn[j, k, 0:NumberOfBands]
 
-			temp = ImageIn[j, k, 0:NumberOfBands-1]
-			print(len(temp))
 			#EuclideanDistanceResultant[j, k, :] = np.sqrt(np.sum(np.power(np.subtract(np.matlib.repmat(temp, NumberOfClusters, 1), InitialCluster[: ,:]), 2), axis = 1))
-			EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2), axis = 1))
+			EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2)))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
 			for l in range(0, NumberOfClusters - 1):
@@ -137,7 +134,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	progbar(ImageRow, ImageRow)
 	print('\nfinished big loop')
 
-	ImageDisplay = np.sum(Cluster, axis = 2)
+	ImageDisplay = sum(Cluster, axis = 2)
 	print(time.time() - tic)
 
 	ClusterPixelCount = count_nonzero(Cluster, axis = 2)
