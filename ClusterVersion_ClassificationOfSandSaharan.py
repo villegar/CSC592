@@ -58,7 +58,7 @@ SummaryLocation     = 'HighRezFullWorld_100_OutputRun3_Catch_Summary'
 LogLocation	        = 'logs'
 BaseName            = 'HighRezFullWorld_100'
 override_init       = 0 # set to 1 to start init file below...
-override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160.mat'
+override_file       = 'InitialConditions.mat.dat'
 
 directories         = glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lon0024.tif') #was + '/*')
 
