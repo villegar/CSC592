@@ -192,7 +192,7 @@ while FlagCluster > 0:
             #randomly select the speficied number of observations from the list of
             #indices without replacement
             #IndexNonZeroSelect = IndexNonZero[np.random.randint(0,len(IndexNonZero),NumberOfClusters)]
-            IndexNonZeroSelect = IndexNonZero[np.random.choice(np.arrange(0:len(IndexNonZero)), NumberOfClusters, replace='false')]
+            IndexNonZeroSelect = IndexNonZero[np.random.choice(np.arange(0,len(IndexNonZero)-1), NumberOfClusters, replace='false')]
 
             #row and column of the random selected values
             RowSelect = IndexNonZeroSelect[:,0]
