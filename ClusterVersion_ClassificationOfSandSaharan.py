@@ -177,7 +177,7 @@ while FlagCluster > 0:
     print(len(ImageList))
     print(NumberOfClusters)
     #y = np.random.randint(0,len(ImageList),NumberOfClusters)
-    y = np.random.randn(len(ImageList[0]), NumberOfClusters)
+    y = np.random.randn(len(ImageList), NumberOfClusters)
 
     if override_init == 0:
         #ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
