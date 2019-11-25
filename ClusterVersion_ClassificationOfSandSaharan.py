@@ -176,7 +176,8 @@ while FlagCluster > 0:
     ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/Other/L8*')]
     print(len(ImageList))
     print(NumberOfClusters)
-    y = np.random.randint(0,len(ImageList),NumberOfClusters)
+    #y = np.random.randint(0,len(ImageList),NumberOfClusters)
+    y = np.random.randn(len(ImageList[0]), NumberOfClusters)
 
     if override_init == 0:
         #ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
@@ -190,7 +191,8 @@ while FlagCluster > 0:
 
             #randomly select the speficied number of observations from the list of
             #indices without replacement
-            IndexNonZeroSelect = IndexNonZero[np.random.randint(0,len(IndexNonZero),NumberOfClusters)]
+            #IndexNonZeroSelect = IndexNonZero[np.random.randint(0,len(IndexNonZero),NumberOfClusters)]
+            IndexNonZeroSelect = IndexNonZero[np.random.choice(np.arrange(0:len(IndexNonZero)), NumberOfClusters, replace='false')]
 
             #row and column of the random selected values
             RowSelect = IndexNonZeroSelect[:,0]
