@@ -57,8 +57,9 @@ SaveLocation        = 'HighRezFullWorld_100_OutputRun3_Catch'
 SummaryLocation     = 'HighRezFullWorld_100_OutputRun3_Catch_Summary'
 LogLocation	        = 'logs'
 BaseName            = 'HighRezFullWorld_100'
-override_init       = 1 # set to 1 to start init file below...
-override_file       = 'HighRezFullWorld_100_2019.10.30_19.08_InitialCluster_C160.mat'
+
+override_init       = 0 # set to 1 to start init file below...
+override_file       = 'InitialConditions.mat.dat'
 
 directories         = glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lon0024.tif') #was + '/*')
 
@@ -66,8 +67,8 @@ directories         = glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lo
 ImageList           = [os.path.basename(x) for x in glob.glob(ImageLocation + '/Other/L8_BA_R030_V4_Lat0034_Lon0024.tif')] #was + '/Other/L8*')]
 print("we are in the main file\n\n\n\n\n\n\n\n\n\n");
 #start with the number of clusters
-NumberOfClusters    = 159 #was 160
-NumberOfBands       = 15 #was 16
+NumberOfClusters    = 160 #was 160
+NumberOfBands       = 16 #was 16
 
 #flag to check whether to increase clusters or not
 FlagCluster         = 1
@@ -176,11 +177,12 @@ while FlagCluster > 0:
     ImageList       = [os.path.basename(x) for x in glob.glob(ImageLocation + '/Other/L8*')]
     print(len(ImageList))
     print(NumberOfClusters)
-    y = np.random.randint(0,len(ImageList),NumberOfClusters)
+    #y = np.random.randint(0,len(ImageList),NumberOfClusters)
+    y = np.random.randn(len(ImageList), NumberOfClusters)
 
     if override_init == 0:
-        #ImageIn = skimage.io.imread(ImageLocation + '/Other/' + ImageList[y[NumberOfClusters - 1]])
-        for i in range(0,NumberOfClusters):
+        #ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
+        for i in range(0,NumberOfClusters - 1):
             ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
 
             BinaryMask = ~ np.isnan(ImageIn[:,:,0])
@@ -190,7 +192,8 @@ while FlagCluster > 0:
 
             #randomly select the speficied number of observations from the list of
             #indices without replacement
-            IndexNonZeroSelect = IndexNonZero[np.random.randint(0,len(IndexNonZero),NumberOfClusters)]
+            #IndexNonZeroSelect = IndexNonZero[np.random.randint(0,len(IndexNonZero),NumberOfClusters)]
+            IndexNonZeroSelect = IndexNonZero[np.random.choice(np.arange(0,len(IndexNonZero)-1), NumberOfClusters, replace='false')]
 
             #row and column of the random selected values
             RowSelect = IndexNonZeroSelect[:,0]
@@ -223,7 +226,7 @@ while FlagCluster > 0:
         if local_version == 1:
             directories = sorted(glob.glob(ImageLocation + '/*'))
             #for directory in range(0,len(directories)):
-            for directory in directories:
+            for directory in range(2, directories[0]-1):
                 ImageList = [os.path.basename(x) for x in glob.glob(directory + '/L8*')]
                 ImageList = sorted(glob.glob(directory + '/L8*'))
                 ImageLocation_Sub = directory
@@ -244,7 +247,7 @@ while FlagCluster > 0:
             ##unix('scancel --user=larry.leigh','-echo')
             Jobs = list()
             JobID = ''
-            for directory in directories:
+            for directory in range(2, directories[0]-1):
                 newJob = {
                     'ImageList' : sorted(glob.glob(directory + '/L8*')),
                     'ImageLocation_Sub' : directory
