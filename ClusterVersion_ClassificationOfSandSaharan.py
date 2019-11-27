@@ -182,7 +182,7 @@ while FlagCluster > 0:
     if override_init == 0:
         #ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
         for i in range(0,NumberOfClusters - 1):
-            ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters]])
+            ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters]-1])
 
             BinaryMask = ~ np.isnan(ImageIn[:,:,0])
             #linear indices of nonzero values
