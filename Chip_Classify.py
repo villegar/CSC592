@@ -124,7 +124,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 			EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2)))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
-			print(str(j) +" "+ str(k))
+			#print(str(j) +" "+ str(k))
 
 			for l in range(0, NumberOfClusters):
 				if DistanceNearestCluster != 0:
@@ -161,11 +161,12 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 				#print(len(InitialCluster[FlagSwitch, :]));
 				#print("len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])");
 				#print(len(np.squeeze(ImageIn[j, k, 0:NumberOfBands])));
-			
+
 
 
 				#Might be TsseCluster[0,FlagSwitch-1]
 				#TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power(np.subtract(np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]), np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
+
 				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(power( (squeeze(ImageIn[j, k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2))
 
 				#count the number of pixels in each cluster
