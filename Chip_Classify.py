@@ -176,7 +176,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	#calculate the spatial mean and standard deviation of each cluster
 
 	ClusterMeanAllBands = zeros((NumberOfClusters, NumberOfBands))
-	ClusterSdAllBands = zeros((NUmberOfClusters, NumberOfBands))
+	ClusterSdAllBands = zeros((NumberOfClusters, NumberOfBands))
 	print('finished small loop')
 	print(time.time()-tic)
 
