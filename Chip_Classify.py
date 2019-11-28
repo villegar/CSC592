@@ -11,13 +11,14 @@ from numpy import power
 from numpy import count_nonzero
 from numpy import squeeze
 from numpy import transpose
-from numpy import apply_over_axes
+from numpy import apply_along_axis
 from numpy import multiply
 from numpy import isnan
 from numpy import mean
 from numpy import std
 from numpy import int8
 from numpy import random
+from numpy import nonzero
 #-------------------
 
 
@@ -105,7 +106,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print(time.time()-tic)
 
 	#Cluster = np.zeros((1, ImageColumn, NumberOfClusters)) # For Ray
-	for j in range(0, ImageRow):
+	for j in range(0, 5):#ImageRow
 		#display(num2str(100*j/ImageRow))
 		if(j % 10 == 0):
 			progbar(j, ImageRow)
@@ -167,10 +168,11 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 				#Might be TsseCluster[0,FlagSwitch-1]
 				#TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power(np.subtract(np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]), np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
 
-				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(power( (squeeze(ImageIn[j, k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2))
+				TsseCluster[0,FlagSwitch] = TsseCluster[0,FlagSwitch] + sum(power( (squeeze(ImageIn[j, k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2))
 
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
+	print(TsseCluster)
 	Totalsse = sum(TsseCluster)
 	#get data for final stats....
 	#calculate the spatial mean and standard deviation of each cluster
@@ -179,29 +181,32 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	ClusterSdAllBands = zeros((NumberOfClusters, NumberOfBands))
 	print('finished small loop')
 	print(time.time()-tic)
+	
+	FinalClusterMean = zeros(NumberOfBands)
+	FinalClusterSd = zeros(NumberOfBands)
 
 	for i in range(0, NumberOfClusters):
 		Temp = Cluster[:, :, i]
 
 		Temp[Temp == i] = 1
 
-		MaskedClusterAllBands = apply_over_axes(multiply, Temp, ImageIn[:, :, 0:NumberOfBands])
-
+		MaskedClusterAllBands = Temp[:,:,None]*ImageIn[:, :, 0:NumberOfBands]
 
 		for j in range(0, NumberOfBands):
 			#Mean = MaskedClusterAllBands(:,:,j)
 			Temp = MaskedClusterAllBands[:, :, j]
-			TempNonZero = Temp[Temp != 0]
-			TempNonzeronan = TempNonZero[not isnan(TempNonZero)]
+			TempNonZero = Temp[nonzero(Temp)]
+			TempNonzeronan = TempNonZero[~isnan(TempNonZero)]
 			#TempNonan = Temp[!np.isnan(Temp)]
-			FinalClusterMean[j] = mean(tempNonzeronan)
-			FinalClusterSd[j] = std(tempNonzeronan)
+			FinalClusterMean[j] = mean(TempNonzeronan)
+			FinalClusterSd[j] = std(TempNonzeronan)
 
-		ClusterMeanAllBands[i, :] = FinalClusterMean[1, :]
-		ClusterSdAllBands[i, :] = FinalClusterSd[1, :]
+		ClusterMeanAllBands[i, :] = FinalClusterMean[:]
+		ClusterSdAllBands[i, :] = FinalClusterSd[:]
 
 	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
-	save(filename, 'ImageDisplay')
+	save(filename, ImageDisplay)
+
 
 	filename = str(SaveLocation) + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-32:len(ImageFile)-4] + '.tif'
 
