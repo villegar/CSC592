@@ -124,6 +124,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 			EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2)))
 			DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
+			print(str(j) +" "+ str(k))
+
 			for l in range(0, NumberOfClusters - 1):
 				if DistanceNearestCluster != 0:
 					if DistanceNearestCluster == EuclideanDistanceResultant[j, k, l]:
