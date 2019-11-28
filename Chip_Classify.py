@@ -105,7 +105,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print(time.time()-tic)
 
 	#Cluster = np.zeros((1, ImageColumn, NumberOfClusters)) # For Ray
-	for j in range(0, ImageRow - 1):
+	for j in range(0, ImageRow):
 		#display(num2str(100*j/ImageRow))
 		if(j % 10 == 0):
 			progbar(j, ImageRow)
@@ -117,7 +117,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		#else:
 		#	Cluster = np.concatenate((Cluster, np.zeros((1, ImageColumn, NumberOfClusters))))
 
-		for k in range(0, ImageColumn - 1):
+		for k in range(0, ImageColumn):
 			temp = ImageIn[j, k, 0:NumberOfBands]
 
 			#EuclideanDistanceResultant[j, k, :] = np.sqrt(np.sum(np.power(np.subtract(np.matlib.repmat(temp, NumberOfClusters, 1), InitialCluster[: ,:]), 2), axis = 1))
@@ -126,11 +126,11 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 			print(str(j) +" "+ str(k))
 
-			for l in range(0, NumberOfClusters - 1):
+			for l in range(0, NumberOfClusters):
 				if DistanceNearestCluster != 0:
 					if DistanceNearestCluster == EuclideanDistanceResultant[j, k, l]:
 						CountClusterPixels[l] = CountClusterPixels[l] + 1
-						for m in range(0, NumberOfBands - 1):
+						for m in range(0, NumberOfBands):
 							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 						Cluster[j, k, l] = l
 	progbar(ImageRow, ImageRow)
@@ -145,8 +145,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	TsseCluster = zeros((1, NumberOfClusters))
 	CountTemporalUnstablePixel = 0
 
-	for j in range(0, ImageRow - 1):
-		for k in range(0, ImageColumn - 1):
+	for j in range(0, ImageRow):
+		for k in range(0, ImageColumn):
 			FlagSwitch = int(max(Cluster[j, k, :]))
 			#print(Cluster[j, k, :]) #This prints to the log
 
@@ -166,7 +166,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 				#Might be TsseCluster[0,FlagSwitch-1]
 				#TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power(np.subtract(np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]), np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
-				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(power( (squeeze(ImageIn[j, k, 0:NumberOfBands - 1]) - transpose(InitialCluster[FlagSwitch, :])),2), axis = 0)
+				TsseCluster[FlagSwitch] = TsseCluster[FlagSwitch] + sum(power( (squeeze(ImageIn[j, k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2))
 
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
@@ -179,15 +179,15 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print('finished small loop')
 	print(time.time()-tic)
 
-	for i in range(0, NumberOfClusters - 1):
+	for i in range(0, NumberOfClusters):
 		Temp = Cluster[:, :, i]
 
 		Temp[Temp == i] = 1
 
-		MaskedClusterAllBands = apply_over_axes(multiply, Temp, ImageIn[:, :, 0:NumberOfBands - 1])
+		MaskedClusterAllBands = apply_over_axes(multiply, Temp, ImageIn[:, :, 0:NumberOfBands])
 
 
-		for j in range(0, NumberOfBands - 1):
+		for j in range(0, NumberOfBands):
 			#Mean = MaskedClusterAllBands(:,:,j)
 			Temp = MaskedClusterAllBands[:, :, j]
 			TempNonZero = Temp[Temp != 0]
@@ -199,17 +199,17 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[1, :]
 		ClusterSdAllBands[i, :] = FinalClusterSd[1, :]
 
-	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
+	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	save(filename, 'ImageDisplay')
 
-	filename = str(SaveLocation) + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-33:len(ImageFile)-5] + '.tif'
+	filename = str(SaveLocation) + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-32:len(ImageFile)-4] + '.tif'
 
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
 
 	with rio.open(filename, 'w', **info) as dst:
 		dst.write(int8(ImageDisplay), 1)
 
-	filename = str(SaveLocation) + 'Stats_' + ImageFile[len(ImageFile)-33:len(ImageFile)-4] + 'mat'
+	filename = str(SaveLocation) + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	save(filename, ['MeanCluster', 'CountClusterPixels', 'ClusterPixelCount', 'ClusterMeanAllBands', 'ClusterSdAllBands', 'Totalsse'])
 	print('done!')
 	print(time.time()-tic)
