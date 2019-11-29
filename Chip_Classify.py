@@ -19,6 +19,7 @@ from numpy import std
 from numpy import int8
 from numpy import random
 from numpy import nonzero
+from numpy import savez
 #-------------------
 
 
@@ -217,6 +218,6 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		dst.write(int8(ImageDisplay), 1)
 
 	filename = str(SaveLocation) + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
-	save(filename, [MeanCluster, CountClusterPixels, ClusterPixelCount, ClusterMeanAllBands, ClusterSdAllBands, Totalsse])
+	savez(filename, [MeanCluster, CountClusterPixels, ClusterPixelCount, ClusterMeanAllBands, ClusterSdAllBands, Totalsse])
 	print('done!')
 	print(time.time()-tic)
