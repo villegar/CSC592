@@ -206,7 +206,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[:]
 		ClusterSdAllBands[i, :] = FinalClusterSd[:]
 
-	filename = str(SaveLocation) + "ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
+	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	save(filename, ImageDisplay)
 
 
