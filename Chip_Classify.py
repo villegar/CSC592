@@ -19,6 +19,7 @@ from numpy import std
 from numpy import int8
 from numpy import random
 from numpy import nonzero
+from numpy import save
 from numpy import savez
 #-------------------
 
@@ -34,7 +35,7 @@ import time
 from datetime import datetime
 #from math import sqrt
 from PIL import Image
-from utils import save, progbar
+from utils import progbar
 from time import sleep
 
 #for image
@@ -206,9 +207,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[:]
 		ClusterSdAllBands[i, :] = FinalClusterSd[:]
 
-	print("Start saving files")
-
 	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
+	print('Got filename. Now save the data')
 	save(filename, ImageDisplay)
 
 	filename = str(SaveLocation) + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-32:len(ImageFile)-4] + '.tif'
