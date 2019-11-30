@@ -206,16 +206,14 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[:]
 		ClusterSdAllBands[i, :] = FinalClusterSd[:]
 
+	print("Start saving files")
+
 	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	save(filename, ImageDisplay)
-
-	print("line 212")
 
 	filename = str(SaveLocation) + 'ClusterCount' + str(NumberOfClusters) + '_' + ImageFile[len(ImageFile)-32:len(ImageFile)-4] + '.tif'
 
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
-
-	print("line 218")
 
 	with rio.open(filename, 'w', **info) as dst:
 		dst.write(int8(ImageDisplay), 1)
