@@ -181,7 +181,7 @@ while FlagCluster > 0:
 
     if override_init == 0:
         #ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters - 1]])
-        for i in range(0,NumberOfClusters - 1):
+        for i in range(0,NumberOfClusters):
             ImageIn = skimage.io.imread(ImageLocation + '/NorthAfrica/' + ImageList[y[NumberOfClusters-1]-1])
 
             BinaryMask = ~ np.isnan(ImageIn[:,:,0])
@@ -225,7 +225,7 @@ while FlagCluster > 0:
         if local_version == 1:
             directories = sorted(glob.glob(ImageLocation + '/*'))
             #for directory in range(0,len(directories)):
-            for directory in range(2, directories[0]-1):
+            for directory in range(2, directories[0]):
                 ImageList = [os.path.basename(x) for x in glob.glob(directory + '/L8*')]
                 ImageList = sorted(glob.glob(directory + '/L8*'))
                 ImageLocation_Sub = directory
@@ -246,7 +246,7 @@ while FlagCluster > 0:
             ##unix('scancel --user=larry.leigh','-echo')
             Jobs = list()
             JobID = ''
-            for directory in range(2, directories[0]-1):
+            for directory in range(2, directories[0]):
                 newJob = {
                     'ImageList' : sorted(glob.glob(directory + '/L8*')),
                     'ImageLocation_Sub' : directory
