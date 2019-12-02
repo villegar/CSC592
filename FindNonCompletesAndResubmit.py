@@ -42,14 +42,14 @@ def save(filename, variables):
 JobsLeft=Jobs;
 found=0;
 print "starting: find missing jobs"
-for complete in range(0,len(Out[0])-1):
+for complete in range(0,len(Out[0])):
     #disp(complete)
-    for Job in range(2,len(JobsLeft[1])-1):
+    for Job in range(2,len(JobsLeft[1])):
         #display(Job)
 #         for complete=1:size(Out,1)
 #             complete
             #for subjob in range(1,len(JobsLeft)[Job].ImageList,1)):
-            for subjob in range(0, len(JobsLeft[Job].ImageList[0])-1):
+            for subjob in range(0, len(JobsLeft[Job].ImageList[0])):
                 if !len(JobsLeft[Job].ImageList[1])==0:
                 if Out[complete].name[end-33:end-5]==JobsLeft[Job].ImageList[subjob].name[0:end-5]):
                     #disp(['found: ',Out(complete).name(end-32:end-4),' ',JobsLeft(Job).ImageList(subjob).name(1:end-4)])
@@ -68,7 +68,7 @@ if exist(file,'file'):
 #fid = fopen('rerun_results.txt','w');
 count=0;
 shell.call("rm Reprocess_Temp/*")
-for directory in range(2, len(JobsLeft[1])-1):
+for directory in range(2, len(JobsLeft[1])):
     if !len(JobsLeft[directory].ImageList[1])==0:
         #Jobs(directory).ImageList   = dir(fullfile(ImageLocation,directorys(directory).name,'L8*'));
         #Jobs(directory).ImageLocation_Sub = fullfile(ImageLocation,directorys(directory).name) %#ok<NOPTS>
@@ -78,7 +78,7 @@ for directory in range(2, len(JobsLeft[1])-1):
         
         #In = dir(fullfile(Jobs(directory).ImageLocation_Sub,'L*'));
         print(["current size = ",str(len(JobsLeft[directory].ImageList[0])),', added to start size of ',num2str(InSize)])
-        for result in range(0,len(JobsLeft[directory].ImageList[0])-1):
+        for result in range(0,len(JobsLeft[directory].ImageList[0])):
             #create links to all non-processed results
             shell.call(["ln -s ",fullfile(JobsLeft[directory].ImageList[result].folder,JobsLeft[directory].ImageList[result].name)," Reprocess_Temp/",JobsLeft[directory].ImageList[result].name])
             

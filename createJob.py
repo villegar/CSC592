@@ -64,7 +64,7 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
 
         #jobFile.write('echo python -c "\\"from Chip_Classify import Chip_Classify as chipClassify; chipClassify(''{}'', ''{}'','''',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
         jobFile.write('echo python -c "\\"from Chip_Classify import Chip_Classify as chipClassify; chipClassify(\'{}\', \'{}\',\'$ImageFile\',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
-        for c in range(0,NumberOfClusters - 1):
+        for c in range(0,NumberOfClusters):
             if InitialCluster.shape[1] == 7:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             elif InitialCluster.shape[1] == 16:	#was 16, changed based on NumberOfBands
@@ -76,7 +76,7 @@ def createJob(ImageLocation,SaveLocation,ImageList,NumberOfClusters,InitialClust
 
         #jobFile.write('echo python -c "\\"from Chip_Classify import Chip_Classify as chipClassify; chipClassify(''{}'', ''{}'',''$files[$SLURM_ARRAY_TASK_ID]'',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
         jobFile.write('python -c "from Chip_Classify import Chip_Classify as chipClassify; chipClassify(\'{}\', \'{}\',\'$ImageFile\',{},['.format(ImageLocation,SaveLocation,str(NumberOfClusters)))
-        for c in range(0,NumberOfClusters - 1):
+        for c in range(0,NumberOfClusters):
             if InitialCluster.shape[1] == 7:
                 jobFile.write('{:f}, {:f}, {:f}, {:f}, {:f}, {:f}, {:f}'.format(*InitialCluster[c,]))
             elif InitialCluster.shape[1] == 16: #was 16, changed based on NumberOfBands
