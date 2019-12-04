@@ -68,13 +68,13 @@ def EuclideanDistance(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberO
 	CountClusterPixels = zeros((NumberOfClusters, 1))
 	MeanCluster = zeros((NumberOfClusters, NumberOfBands))
 	EuclideanDistanceResultant = zeros((ImageRow, ImageColumn, NumberOfClusters))
-	for k in range(0, ImageColumn - 1):
+	for k in range(0, ImageColumn):
 		temp = ImageIn[j, k, 0:NumberOfBands]
 		#print("Inner loop: ({},{})".format(j,k))
-		EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2), axis = 1))
+		EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2)))
 		DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
-		for l in range(0, NumberOfClusters - 1):
+		for l in range(0, NumberOfClusters):
 			if DistanceNearestCluster != 0:
 				if DistanceNearestCluster == EuclideanDistanceResultant[j, k, l]:
 					CountClusterPixels[l] = CountClusterPixels[l] + 1
