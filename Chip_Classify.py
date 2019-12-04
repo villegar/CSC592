@@ -48,6 +48,7 @@ import rasterio as rio
 #import earthpy.plot as ep
 
 # Start Ray.
+ray.shutdown()
 ray.init(num_cpus = 10)
 
 def Chip_Classify0(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
