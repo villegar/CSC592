@@ -1,0 +1,228 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <omp.h>
+#include <cuda.h>
+//#include <cusparse.h>
+
+
+
+//change based on the shape of your matrix
+#define N 3
+#define ROWS N
+#define COLS N
+
+#define index(i,j,cols) i*cols+j  //column number * i + 
+
+/*
+*	Function: initializeMatrix
+*	
+*	Description: Allocates memory for a row x col matrix of floats, 
+*		initialized to 0.
+*
+*	Parameters:
+*		int rows - number of rows in the matrix or vector
+*		int cols - number of columns in the matrix or vector (cols=1)
+*
+*	Return: (float *) pointing to matrix/vector
+*/
+float * initializeMatrix(int rows, int cols){
+	//allocate memory for the matrix and set each value to 0
+	float * array = (float *) calloc(rows * cols,sizeof(float));
+	
+	return array;
+}
+
+/*
+*	Function: readfile
+*	
+*	Description: Reads in a rows x cols matrix from filename.
+*
+*	Parameters:
+*		char * filename - C-string name of the file to be read
+*		int rows - number of rows in the matrix or vector
+*		int cols - number of columns in the matrix or vector (cols=1)
+*
+*	Return: (float *) pointing to matrix/vector
+*/
+float * readfile(char * filename, int rows, int cols){
+	
+	FILE * mat_file;
+	
+	//initialize return
+	float * retVal = initializeMatrix(rows, cols);
+	
+	//open file, ensure it opened
+	mat_file = fopen(filename,"rb");
+	if(mat_file == NULL){
+		printf("error: invalid filename \"%s\"\n", filename);
+		exit(-1);
+	}
+	
+	//read data into vector
+	fread((void*)retVal,sizeof(float),rows*cols,mat_file);
+	
+	//close file
+	fclose(mat_file);
+	
+    return retVal;
+	
+}
+
+
+/*
+ * Sparse Matrix Multiply in parallel on the GPU.
+ */
+__global__ void deviceMat(float * d_a, float * d_b, float * d_c, int n){
+	
+	int myId = blockIdx.x * blockDim.x + threadIdx.x;
+	int gridstride = gridDim.x * blockDim.x;
+	float a, b, out3;
+	int d = 0;
+	
+	for(int l = 0; l < n; l+=gridstride){
+			for(int k = 0; k < N; k++){
+				a = b = out3 = 0;
+				for(int i = 0; i < N; i++){
+					a = d_a[l * N + i];
+					b = d_b[k * N + i];
+					out3 = out3 + (a * b);
+				}
+			d_c[d] = out3;
+			//printf("%lf\n", d_c[d]); //for debugging - shows the output
+			d++;
+			}		
+	}
+}
+
+int main(int argc, char** argv) {
+	
+	if (argc < 2) {
+		fprintf(stderr, "Usage: avg num_elements_per_proc\n");
+		return -1;
+	}
+	
+	float * matA = initializeMatrix(ROWS, COLS);
+	float * matA2 = initializeMatrix(ROWS, COLS);
+	float * matB = initializeMatrix(ROWS, COLS);
+	float * matBt = initializeMatrix(ROWS, COLS);
+	float * matB2 = initializeMatrix(ROWS, COLS);
+	float * matC = initializeMatrix(ROWS, COLS);
+	
+	float size = (N*N) * sizeof(float);
+	
+	double t0, t1;
+	
+	matA = readfile(argv[1],ROWS,COLS);
+	matB = readfile(argv[2],ROWS,COLS);
+	
+	int first = 0, ifnum=0, LOC_num = 0;
+	
+	matBt[0] = matB[0];
+		for(int q = 1; q < N*N; q++)
+		{
+			LOC_num = (LOC_num + N)%(N*N);		
+			if(LOC_num == ifnum && first!=0)
+			{
+				LOC_num++;
+				ifnum++;
+			}
+
+			matBt[LOC_num] = matB[q];
+			first = 1;
+			//printf("%d\n",LOC_num); //for debugging - shows the output
+		}
+	
+	int s = 0, f = 0;
+	//save value and position of nonzero elements	
+	for(int q = 0; q<N; q++)
+	{
+		for(int w = 0; w<N; w++)
+		{
+	
+			if(matA[q] != 0)
+			{
+				matA2[s][0] = q;
+				matA2[s][1] = w;
+				matA2[s][2] = matA[q];
+				s++;
+			}
+		
+			if(matBt[q] != 0)
+			{
+				matB2[f][0] = q;
+				matB2[f][1] = w;
+				matB2[f][2] = matBt[q];
+				f++;
+			}
+		}
+	}	
+
+    /*-----------------------//
+	//						 //
+	//This is the Sparse Matrix//
+	// 						 //
+	//-----------------------*/
+	
+	float *d_a, *d_b, *d_c;
+	
+	t0 = omp_get_wtime();
+	
+	//int size = (N*N) * sizeof(int);
+	
+	cudaMalloc(&d_a, size);
+	cudaMalloc(&d_b, size);
+	cudaMalloc(&d_c, size);
+	cudaMemcpy(d_a, matA2, size, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_b, matB2, size, cudaMemcpyHostToDevice);
+	
+	//int gridSize = (int)ceil(N/1024);
+	
+	deviceMat<<<20,1024>>>(d_a, d_b, d_c, N);
+	
+	cudaDeviceSynchronize();
+	cudaMemcpy(matC, d_c, size, cudaMemcpyDeviceToHost);
+	
+	
+	cudaError_t syncErr, asyncErr;
+	syncErr = cudaGetLastError();
+	asyncErr = cudaDeviceSynchronize();
+	if(syncErr != cudaSuccess)
+	{
+		printf("Error: %s\n", cudaGetErrorString(syncErr));
+	}
+
+	if(asyncErr != cudaSuccess)
+	{
+		printf("Error: %s\n", cudaGetErrorString(asyncErr));
+	}
+
+	t1 = omp_get_wtime()-t0;
+	
+	//for(int h = 0; h < 8; h++)
+	//{
+		//printf("The mat-mat product is: %lf \n", matC[h]); //for debugging - shows the value of the matrix product
+	//}
+	
+	long MB = 0;
+	
+	printf("Matrix-Matrix Product Time = %lf\n", t1);
+	//flops = 2 * N * N * N;
+	MB = 8 * ROWS * COLS / pow(10,6);
+ 	//printf("This is %lf FLOPS\n", flops/t1);
+	printf("load speed: %lf MB/s\n", MB/t1);
+	
+	cudaFree(d_a);
+	cudaFree(d_b);
+	cudaFree(d_c);
+	free(matA);
+	free(matA2);
+	free(matB);
+	free(matBt);
+	free(matB2);
+	free(matC);
+	
+	return 0;
+}
