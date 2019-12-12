@@ -64,14 +64,15 @@ def Chip_Classify0(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,Initial
 #def EuclideanDistance(j, Cluster, CountClusterPixels, EuclideanDistanceResultant, ImageColumn, ImageIn, InitialCluster, MeanCluster, NumberOfBands, NumberOfClusters):
 @ray.remote
 def EuclideanDistance(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberOfBands, NumberOfClusters):
-	Cluster = zeros((1, ImageColumn, NumberOfClusters))
+	#Cluster = zeros((1, ImageColumn, NumberOfClusters))
 	CountClusterPixels = zeros((NumberOfClusters, 1))
 	MeanCluster = zeros((NumberOfClusters, NumberOfBands))
 	EuclideanDistanceResultant = zeros((ImageRow, ImageColumn, NumberOfClusters))
 	for k in range(0, ImageColumn):
 		temp = ImageIn[j, k, 0:NumberOfBands]
 		#print("Inner loop: ({},{})".format(j,k))
-		EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[: ,:]), 2)))
+		#EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2)))
+		EuclideanDistanceResultant[j, k, :] = sqrt(sum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2)))
 		DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 
 		for l in range(0, NumberOfClusters):
