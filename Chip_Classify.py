@@ -50,11 +50,12 @@ import rasterio as rio
 #import earthpy.plot as ep
 #import numpy as np
 
-CPUS = 20
+CPUS = 16
+TASKS_LIMIT = CPUS
 
 # Start Ray.
 ray.shutdown()
-ray.init(num_cpus = CPUS)
+ray.init()#num_cpus = CPUS, temp_dir = '/tmp')#, memory=40000000000, object_store_memory=40000000000)
 
 def Chip_Classify0(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	print("ChipClassify function")
@@ -93,7 +94,7 @@ def EuclideanDistance(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberO
 					for m in range(0, NumberOfBands):
 						MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 					Cluster[0, k, l] = l
-	return([Cluster,CountClusterPixels,EuclideanDistanceResultant,MeanCluster])
+	return([Cluster,CountClusterPixels,EuclideanDistanceResultant,MeanCluster,j])
 	# return({"Cluster": Cluster,
 	# 		"CountClusterPixels": CountClusterPixels,
 	# 		"EuclideanDistanceResultant": EuclideanDistanceResultant,
@@ -101,19 +102,17 @@ def EuclideanDistance(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberO
 
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
 	tic = time.time()
-	sleep(random.beta(1,1)*30)
+	#sleep(random.beta(1,1)*30)
 	# Reshape InitialCluster
 	InitialCluster = array(InitialCluster).reshape((NumberOfClusters,-1))
 	ImageIn = imread(ImageFile)
 	with rio.open(ImageFile) as gtf_img:
-		info = gtf_img.profile
-		info.update(dtype=rio.int8)
+		Info = gtf_img.profile
+		Info.update(dtype=rio.int8)
 	print(time.time()-tic)
 	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
-	print(NumberOfBands)
 	if NumberOfBands > 8:
 		NumberOfBands = NumberOfBands - 1
-	print(NumberOfBands)
 	# prealocate
 	#Cluster = zeros((ImageRow, ImageColumn, NumberOfClusters))
 	#CountClusterPixels = zeros((NumberOfClusters, 1))
@@ -127,8 +126,15 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print(time.time()-tic)
 
 	#Cluster = zeros((1, ImageColumn, NumberOfClusters)) # For Ray
-	Cluster = zeros((1, 1, 1)) # For Ray
-	ImageRow = 1000
+	# Cluster = zeros((1, 1, 1)) # For Ray
+	# CountClusterPixels = zeros((1, 1))
+	# MeanCluster = zeros((1, 1))
+	# EuclideanDistanceResultant = zeros((1, 1, 1))
+	Cluster = zeros((ImageRow, ImageColumn, NumberOfClusters))
+	CountClusterPixels = zeros((NumberOfClusters, ImageRow))
+	MeanCluster = zeros((NumberOfClusters, NumberOfBands, ImageRow))
+	EuclideanDistanceResultant = zeros((ImageRow, ImageColumn, NumberOfClusters))
+	ImageRow = 100
 	TaskIDs = list()
 	for j in range(0,ImageRow):
 		#display(num2str(100*j/ImageRow))
@@ -138,30 +144,36 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		TaskID = EuclideanDistance.remote(j, ImageColumn, ImageIn, ImageRow, InitialCluster, NumberOfBands, NumberOfClusters)
 		TaskIDs.append(TaskID)
 		#output = ray.get(TaskID)
-		if(len(TaskIDs) == CPUS): # Retrieve the results after [CPUS] jobs have been spawned
+		if(len(TaskIDs) % TASKS_LIMIT == 0):
+		#if(len(TaskIDs) == CPUS): # Retrieve the results after [CPUS] jobs have been spawned
 			#print("Processing tasks: ")
-			#tic = time.time()
-			results = ray.get(TaskIDs)
+			#print(len(TaskIDs))
+			ticTasks = time.time()
+			Ready,Pending = ray.wait(TaskIDs)
+			results = ray.get(Ready)
+			#results = ray.get(TaskIDs)
 			#print(time.time() - tic)
+			#print(len(Pending))
+			print("Processing: " + str(len(Ready)) + "-" + str(len(Pending)))
 			for output in results:
-				# print(output)
-				# print(output["Cluster"].shape)
-				# print(output["CountClusterPixels"].shape)
-				# print(output["EuclideanDistanceResultant"].shape)
-				# print(output["MeanCluster"].shape)
-				if((Cluster.shape == array([1,1,1])).all()):
-					#print("A")
-					Cluster = output[0] 					# Cluster
-					CountClusterPixels = output[1] 			# CountClusterPixels
-					EuclideanDistanceResultant = output[2]	# EuclideanDistanceResultant
-					MeanCluster = output[3]					# MeanCluster
-				else:
-					#print("B")
-					Cluster = concatenate((Cluster, output[0]))
-					CountClusterPixels = concatenate((CountClusterPixels, output[1]), axis = 1)
-					EuclideanDistanceResultant = concatenate((EuclideanDistanceResultant, output[2]))
-					MeanCluster = dstack((MeanCluster, output[3]))
-			TaskIDs = list()
+				jPrime = output[4]
+				Cluster[jPrime,:,:] = output[0]						# Cluster
+				CountClusterPixels[:,jPrime] = output[1][:,0]			# CountClusterPixels
+				EuclideanDistanceResultant[jPrime,:,:] = output[2]	# EuclideanDistanceResultant
+				MeanCluster[:,:,jPrime] = output[3]					# MeanCluster
+				# if((Cluster.shape == array([1,1,1])).all()):
+				# 	Cluster = output[0] 					# Cluster
+				# 	CountClusterPixels = output[1] 			# CountClusterPixels
+				# 	EuclideanDistanceResultant = output[2]	# EuclideanDistanceResultant
+				# 	MeanCluster = output[3]					# MeanCluster
+				# else:
+				# 	Cluster = concatenate((Cluster, output[0]))
+				# 	CountClusterPixels = concatenate((CountClusterPixels, output[1]), axis = 1)
+				# 	EuclideanDistanceResultant = concatenate((EuclideanDistanceResultant, output[2]))
+				# 	MeanCluster = dstack((MeanCluster, output[3]))
+			#TaskIDs = list()
+			TaskIDs = Pending
+			print(time.time()-ticTasks)
 
 		# if((output.shape[1:3] == Cluster.shape[1:3])):
 		# 	Cluster = concatenate((Cluster, output))
@@ -173,7 +185,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		# 	temp = ImageIn[j, k, 0:NumberOfBands]
 		#
 		# 	#EuclideanDistanceResultant[j, k, :] = np.npsqrt(np.npsum(np.nppower(np.subtract(np.matlib.repmat(temp, NumberOfClusters, 1), InitialCluster[: ,:]), 2), axis = 1))
-		# 	EuclideanDistanceResultant[j, k, :] = npsqrt(npsum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2)))
+		# 	EuclideanDistanceResultant[j, k, :] = npsqrt(npsum(power((matlib.repmat(temp, NumberOfClusters, 1) - InitialCluster[:, :]), 2), axis=1))
 		# 	DistanceNearestCluster = min(EuclideanDistanceResultant[j, k, :])
 		#
 		# 	#print(str(j) +" "+ str(k))
@@ -186,6 +198,14 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		# 					MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 		# 				Cluster[j, k, l] = l
 	progbar(ImageRow, ImageRow)
+	results = ray.get(TaskIDs)
+	for output in results:
+		jPrime = output[4]
+		Cluster[jPrime,:,:] = output[0]						# Cluster
+		CountClusterPixels[:,jPrime] = output[1][:,0]		# CountClusterPixels
+		EuclideanDistanceResultant[jPrime,:,:] = output[2]	# EuclideanDistanceResultant
+		MeanCluster[:,:,jPrime] = output[3]					# MeanCluster
+
 	print(Cluster.shape)
 	print(CountClusterPixels.shape)
 	print(EuclideanDistanceResultant.shape)
@@ -227,7 +247,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
-	print(TsseCluster)
+	#print(TsseCluster)
 	Totalsse = npsum(TsseCluster)
 	#get data for final stats....
 	#calculate the spatial mean and standard deviation of each cluster
@@ -267,7 +287,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	#geotiffwrite(filename, int8(ImageDisplay), Info.RefMatrix);
 
-	with rio.open(filename, 'w', **info) as dst:
+	with rio.open(filename, 'w', **Info) as dst:
 		dst.write(int8(ImageDisplay), 1)
 
 	filename = str(SaveLocation) + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
