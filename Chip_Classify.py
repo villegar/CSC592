@@ -305,35 +305,35 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	# print("Total SSE: " + str(Totalsse))
 	# print(TsseCluster[0,1])
 
-	#Calculate TSSE within clusters
-
-	TsseCluster = zeros((1, NumberOfClusters))
-	CountTemporalUnstablePixel = 0
-	# TSSECluster Serial
-	print("Starting TSSE Cluster computation (Serial version)\n")
-	tic = time.time()
-	for j in range(0, ImageRow):
-		for k in range(0, ImageColumn):
-			FlagSwitch = int(max(Cluster[j, k, :]))
-			#print(Cluster[j, k, :]) #This prints to the log
-
-			#store SSE of related to each pixel
-			if FlagSwitch == 0:
-				CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
-			else:
-				#Might be TsseCluster[0,FlagSwitch-1]
-				#TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power(np.subtract(np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]), np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
-
-				TsseCluster[0,FlagSwitch] = TsseCluster[0,FlagSwitch] + npsum(nppower((squeeze(ImageIn[j, k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2))
-
-				#count the number of pixels in each cluster
-				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
-	Totalsse = npsum(TsseCluster)
-	print("Execution time: " + str(time.time() - tic))
-	savez("small.loop.serial",CountTemporalUnstablePixel=CountTemporalUnstablePixel,TsseCluster=TsseCluster)
-	# print("Unstable Pixels: " + str(CountTemporalUnstablePixel))
-	# print("Total SSE: " + str(Totalsse))
-	# print(TsseCluster[0,1])
+	# #Calculate TSSE within clusters
+	#
+	# TsseCluster = zeros((1, NumberOfClusters))
+	# CountTemporalUnstablePixel = 0
+	# # TSSECluster Serial
+	# print("Starting TSSE Cluster computation (Serial version)\n")
+	# tic = time.time()
+	# for j in range(0, ImageRow):
+	# 	for k in range(0, ImageColumn):
+	# 		FlagSwitch = int(max(Cluster[j, k, :]))
+	# 		#print(Cluster[j, k, :]) #This prints to the log
+	#
+	# 		#store SSE of related to each pixel
+	# 		if FlagSwitch == 0:
+	# 			CountTemporalUnstablePixel = CountTemporalUnstablePixel + 1
+	# 		else:
+	# 			#Might be TsseCluster[0,FlagSwitch-1]
+	# 			#TsseCluster[0,FlagSwitch - 1] = TsseCluster[0,FlagSwitch - 1] + np.sum(np.power(np.subtract(np.squeeze(ImageIn[j, k, 0:NumberOfBands - 1]), np.transpose(InitialCluster[FlagSwitch - 1, :])),2), axis = 0)
+	#
+	# 			TsseCluster[0,FlagSwitch] = TsseCluster[0,FlagSwitch] + npsum(nppower((squeeze(ImageIn[j, k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2))
+	#
+	# 			#count the number of pixels in each cluster
+	# 			#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
+	# Totalsse = npsum(TsseCluster)
+	# print("Execution time: " + str(time.time() - tic))
+	# savez("small.loop.serial",CountTemporalUnstablePixel=CountTemporalUnstablePixel,TsseCluster=TsseCluster)
+	# # print("Unstable Pixels: " + str(CountTemporalUnstablePixel))
+	# # print("Total SSE: " + str(Totalsse))
+	# # print(TsseCluster[0,1])
 
 	#get data for final stats....
 	#calculate the spatial mean and standard deviation of each cluster
