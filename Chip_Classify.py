@@ -114,8 +114,23 @@ def TSSECluster(j, Cluster, ImageColumn, ImageIn, InitialCluster, NumberOfBands,
 			TsseCluster[0,FlagSwitch] = TsseCluster[0,FlagSwitch] + npsum(nppower((squeeze(ImageIn[k, 0:NumberOfBands]) - transpose(InitialCluster[FlagSwitch, :])),2))
 	return([CountTemporalUnstablePixel,TsseCluster,j])
 
+@ray.remote
+def ClusterSummary(i, MaskedClusterAllBands, NumberOfBands):
+	FinalClusterMean = zeros(NumberOfBands)
+	FinalClusterSd = zeros(NumberOfBands)
+
+	for j in range(0, NumberOfBands):
+		#Mean = MaskedClusterAllBands(:,:,j)
+		Temp = MaskedClusterAllBands[:, :, j]
+		TempNonZero = Temp[nonzero(Temp)]
+		TempNonzeronan = TempNonZero[~isnan(TempNonZero)]
+		#TempNonan = Temp[!np.isnan(Temp)]
+		FinalClusterMean[j] = mean(TempNonzeronan)
+		FinalClusterSd[j] = std(TempNonzeronan)
+	return([FinalClusterMean,FinalClusterSd,i])
+
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
-	tic = time.time()
+	#tic = time.time()
 	#sleep(random.beta(1,1)*30)
 	# Reshape InitialCluster
 	InitialCluster = array(InitialCluster).reshape((NumberOfClusters,-1))
@@ -123,7 +138,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	with rio.open(ImageFile) as gtf_img:
 		Info = gtf_img.profile
 		Info.update(dtype=rio.int8)
-	print(time.time()-tic)
+	#print(time.time()-tic)
 	ImageRow, ImageColumn, NumberOfBands = ImageIn.shape
 	if NumberOfBands > 8:
 		NumberOfBands = NumberOfBands - 1
@@ -132,12 +147,12 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	#CountClusterPixels = zeros((NumberOfClusters, 1))
 	#MeanCluster = zeros((NumberOfClusters, NumberOfBands))
 	#EuclideanDistanceResultant = zeros((ImageRow, ImageColumn, NumberOfClusters))
-	#os.mkdir('local/larry.leigh.temp/')
-	directory = '/tmp/ChipS'
-	if not os.path.exists(directory):
-		os.makedirs(directory)
-	print('starting big loop')
-	print(time.time()-tic)
+	# #os.mkdir('local/larry.leigh.temp/')
+	# directory = '/tmp/ChipS'
+	# if not os.path.exists(directory):
+	# 	os.makedirs(directory)
+	# print('starting big loop')
+	#print(time.time()-tic)
 
 	#Cluster = zeros((1, ImageColumn, NumberOfClusters)) # For Ray
 	# Cluster = zeros((1, 1, 1)) # For Ray
@@ -151,6 +166,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	#ImageRow = 100
 	TaskIDs = list()
 	ReadyIDs = list()
+	tic = time.time()
 	for j in range(0,ImageRow):
 		#display(num2str(100*j/ImageRow))
 		if(j % 10 == 0):
@@ -240,11 +256,14 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	print(EuclideanDistanceResultant.shape)
 	print(MeanCluster.shape)
 	print('\nfinished big loop')
-
-	#shelver("big.loop",['Cluster','CountClusterPixels','EuclideanDistanceResultant','MeanCluster'])
-
 	ImageDisplay = npsum(Cluster, axis = 2)
-	print(time.time() - tic)
+	print("Execution time: " + str(time.time() - tic))
+	#print(globals())
+	#shelver("big.loop",['Cluster','CountClusterPixels','EuclideanDistanceResultant','MeanCluster'])
+	savez("big.loop.parallel",Cluster=Cluster,
+					 CountClusterPixels=CountClusterPixels,
+					 EuclideanDistanceResultant=EuclideanDistanceResultant,
+					 MeanCluster=MeanCluster)
 
 	ClusterPixelCount = count_nonzero(Cluster, axis = 2)
 	print("Non-zero cluster pixels: " + str(ClusterPixelCount))
@@ -255,6 +274,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	# TSSECluster Parallel
 	print("Starting TSSE Cluster computation\n")
+	tic = time.time()
 	TaskIDs = list()
 	for j in range(0, ImageRow):
 		if(j % 10 == 0):
@@ -268,25 +288,30 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 				jPrime = output[2]
 				CountTemporalUnstablePixel = CountTemporalUnstablePixel + output[0]
 				TsseCluster = TsseCluster + output[1]
+				#TsseCluster = npsum((TsseCluster,output[1]), axis=1)
 			TaskIDs = Pending
-	results = ray.get(Ready)
+	results = ray.get(TaskIDs)
 	for output in results:
 		jPrime = output[2]
 		CountTemporalUnstablePixel = CountTemporalUnstablePixel + output[0]
+		#TsseCluster = npsum((TsseCluster,output[1]), axis=1)
 		TsseCluster = TsseCluster + output[1]
 	progbar(ImageRow, ImageRow)
 	print('\n')
 	Totalsse = npsum(TsseCluster)
-
-	savez("small.loop.parallel",[CountTemporalUnstablePixel,TsseCluster])
-	print("Unstable Pixels: " + str(CountTemporalUnstablePixel))
-	print("Total SSE: " + str(Totalsse))
-	print(TsseCluster[0,1])
+	print("Execution time: " + str(time.time() - tic))
+	savez("small.loop.parallel",CountTemporalUnstablePixel=CountTemporalUnstablePixel,TsseCluster=TsseCluster)
+	# print("Unstable Pixels: " + str(CountTemporalUnstablePixel))
+	# print("Total SSE: " + str(Totalsse))
+	# print(TsseCluster[0,1])
 
 	#Calculate TSSE within clusters
+
 	TsseCluster = zeros((1, NumberOfClusters))
 	CountTemporalUnstablePixel = 0
 	# TSSECluster Serial
+	print("Starting TSSE Cluster computation (Serial version)\n")
+	tic = time.time()
 	for j in range(0, ImageRow):
 		for k in range(0, ImageColumn):
 			FlagSwitch = int(max(Cluster[j, k, :]))
@@ -304,10 +329,11 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 				#count the number of pixels in each cluster
 				#Collected_ClusterPixelCount[FlagSwitch] = Collected_ClusterPixelCount[FlagSwitch] + 1
 	Totalsse = npsum(TsseCluster)
-	savez("small.loop.serial",[CountTemporalUnstablePixel,TsseCluster])
-	print("Unstable Pixels: " + str(CountTemporalUnstablePixel))
-	print("Total SSE: " + str(Totalsse))
-	print(TsseCluster[0,1])
+	print("Execution time: " + str(time.time() - tic))
+	savez("small.loop.serial",CountTemporalUnstablePixel=CountTemporalUnstablePixel,TsseCluster=TsseCluster)
+	# print("Unstable Pixels: " + str(CountTemporalUnstablePixel))
+	# print("Total SSE: " + str(Totalsse))
+	# print(TsseCluster[0,1])
 
 	#get data for final stats....
 	#calculate the spatial mean and standard deviation of each cluster
@@ -315,8 +341,48 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	ClusterMeanAllBands = zeros((NumberOfClusters, NumberOfBands))
 	ClusterSdAllBands = zeros((NumberOfClusters, NumberOfBands))
 	print('finished small loop')
-	print(time.time()-tic)
+	#print(time.time()-tic)
 
+	# # Cluster Summary Parallel
+	# tic = time.time()
+	# print("Starting Cluster Summary computation\n")
+	# TaskIDs = list()
+	# for i in range(0, NumberOfClusters):
+	# 	Temp = Cluster[:, :, i]
+	# 	Temp[Temp == i] = 1
+	# 	MaskedClusterAllBands = Temp[:,:,None]*ImageIn[:, :, 0:NumberOfBands]
+	#
+	# 	if(i % 10 == 0):
+	# 		progbar(i, NumberOfClusters)
+	# 	TaskID = ClusterSummary.remote(i, MaskedClusterAllBands, NumberOfBands)
+	# 	TaskIDs.append(TaskID)
+	# 	if(len(TaskIDs) % TASKS_LIMIT == 0):
+	# 		Ready,Pending = ray.wait(TaskIDs)
+	# 		results = ray.get(Ready)
+	# 		for output in results:
+	# 			iPrime = output[2]
+	# 			FinalClusterMean =  output[0]
+	# 			FinalClusterSd = output[1]
+	#
+	# 			ClusterMeanAllBands[iPrime, :] = FinalClusterMean[:]
+	# 			ClusterSdAllBands[iPrime, :] = FinalClusterSd[:]
+	# 		TaskIDs = Pending
+	# results = ray.get(TaskIDs)
+	# for output in results:
+	# 	iPrime = output[2]
+	# 	FinalClusterMean =  output[0]
+	# 	FinalClusterSd = output[1]
+	#
+	# 	ClusterMeanAllBands[iPrime, :] = FinalClusterMean[:]
+	# 	ClusterSdAllBands[iPrime, :] = FinalClusterSd[:]
+	# progbar(NumberOfClusters, NumberOfClusters)
+	# print('\n')
+	#
+	# print(time.time() - tic)
+	# savez("cluster.summary.parallel",ClusterMeanAllBands=ClusterMeanAllBands,ClusterSdAllBands=ClusterSdAllBands)
+
+	# Cluster Summary Serial
+	tic = time.time()
 	FinalClusterMean = zeros(NumberOfBands)
 	FinalClusterSd = zeros(NumberOfBands)
 
@@ -339,6 +405,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		ClusterMeanAllBands[i, :] = FinalClusterMean[:]
 		ClusterSdAllBands[i, :] = FinalClusterSd[:]
 
+	print("Execution time: " + str(time.time() - tic))
+	savez("cluster.summary.serial",ClusterMeanAllBands=ClusterMeanAllBands,ClusterSdAllBands=ClusterSdAllBands)
 	filename = str(SaveLocation) + 'ImageDisplay_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	print('Got filename. Now save the data')
 	print(filename)
