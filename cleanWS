@@ -1,1 +1,1 @@
-kill -9 $(pidof ray_worker) $(pidof redis-server)
+kill -9 $(pidof ray_worker) $(pidof redis-server) $(pidof plasma_store_server)
