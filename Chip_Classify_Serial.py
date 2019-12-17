@@ -26,7 +26,7 @@ from numpy import dstack
 from bson import ObjectId
 #-------------------
 
-
+import warnings
 import numpy.matlib
 import os
 import random as rand
@@ -53,7 +53,7 @@ import rasterio as rio
 #import numpy as np
 
 def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialCluster):
-	tic = time.time()
+	ticOverall = time.time()
 	#sleep(random.beta(1,1)*30)
 	# Reshape InitialCluster
 	InitialCluster = array(InitialCluster).reshape((NumberOfClusters,-1))
@@ -75,11 +75,10 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	print('starting big loop')
-	print(time.time()-tic)
-
+	tic = time.time()
 	for j in range(0,ImageRow):
-		if(j % 10 == 0):
-			progbar(j, ImageRow)
+		# if(j % 10 == 0):
+			# progbar(j, ImageRow)
 
 		for k in range(0, ImageColumn):
 			temp = ImageIn[j, k, 0:NumberOfBands]
@@ -98,7 +97,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 							MeanCluster[l, m] = MeanCluster[l, m] + ImageIn[j, k, m]
 						Cluster[j, k, l] = l
 
-	progbar(ImageRow, ImageRow)
+	# progbar(ImageRow, ImageRow)
 
 	print('\n')
 	# print(Cluster.shape)
@@ -143,9 +142,6 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	Totalsse = npsum(TsseCluster)
 	print("Execution time: " + str(time.time() - tic))
 	savez("small.loop.serial",CountTemporalUnstablePixel=CountTemporalUnstablePixel,TsseCluster=TsseCluster)
-	# print("Unstable Pixels: " + str(CountTemporalUnstablePixel))
-	# print("Total SSE: " + str(Totalsse))
-	# print(TsseCluster[0,1])
 
 	#get data for final stats....
 	#calculate the spatial mean and standard deviation of each cluster
@@ -173,8 +169,14 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 			TempNonZero = Temp[nonzero(Temp)]
 			TempNonzeronan = TempNonZero[~isnan(TempNonZero)]
 			#TempNonan = Temp[!np.isnan(Temp)]
-			FinalClusterMean[j] = mean(TempNonzeronan)
-			FinalClusterSd[j] = std(TempNonzeronan)
+			with warnings.catch_warnings():
+				warnings.filterwarnings('error')
+				try:
+					FinalClusterMean[j] = npmean(TempNonZero)
+					FinalClusterSd[j] = npstd(TempNonZero)
+				except RuntimeWarning:
+					FinalClusterMean[j] = 0
+					FinalClusterSd[j] = 0
 
 		ClusterMeanAllBands[i, :] = FinalClusterMean[:]
 		ClusterSdAllBands[i, :] = FinalClusterSd[:]
@@ -196,4 +198,4 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	filename = str(SaveLocation) + 'Stats_' + ImageFile[len(ImageFile)-32:len(ImageFile)-3] + 'mat'
 	savez(filename, [MeanCluster, CountClusterPixels, ClusterPixelCount, ClusterMeanAllBands, ClusterSdAllBands, Totalsse])
 	print('done!')
-	print(time.time()-tic)
+	print(time.time()-ticOverall)
