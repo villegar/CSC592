@@ -10,7 +10,7 @@
 
 
 //change based on the shape of your matrix
-#define N 3
+#define N 4096*9
 #define ROWS N
 #define COLS N
 
@@ -75,90 +75,180 @@ float * readfile(char * filename, int rows, int cols){
 /*
  * Sparse Matrix Multiply in parallel on the GPU.
  */
-__global__ void deviceMat(float * d_a, float * d_b, float * d_c, int n){
-	
-	int myId = blockIdx.x * blockDim.x + threadIdx.x;
-	int gridstride = gridDim.x * blockDim.x;
-	float a, b, out3;
+__global__ void deviceMat(float * d_a, float * d_b, float * d_c, int A_size, int B_size, int C_size){
+
 	int d = 0;
+
+	//for debugging
 	
-	for(int l = 0; l < n; l+=gridstride){
-			for(int k = 0; k < N; k++){
-				a = b = out3 = 0;
-				for(int i = 0; i < N; i++){
-					a = d_a[l * N + i];
-					b = d_b[k * N + i];
-					out3 = out3 + (a * b);
-				}
-			d_c[d] = out3;
-			//printf("%lf\n", d_c[d]); //for debugging - shows the output
-			d++;
-			}		
+/* 
+	printf("A_size = %d\n", A_size);
+	printf("B_size = %d\n", B_size);
+	printf("C_size = %d\n", C_size);
+	
+	for(int u = 0; u<A_size; u+=3)
+	{
+		printf("d_a[val] = %.0lf\n", d_a[u]);
+		printf("d_a[row] = %.0lf\n", d_a[u+1]);
+		printf("d_a[col] = %.0lf\n", d_a[u+2]);
+		
 	}
+
+	for(int u = 0; u<B_size; u+=3)
+	{
+		printf("d_b[val] = %.0lf\n", d_b[u]);
+		printf("d_b[row] = %.0lf\n", d_b[u+1]);
+		printf("d_b[col] = %.0lf\n", d_b[u+2]);
+		
+	}
+ */
+	//This assumes each matrix stores values as: [value, row, column, value2, row2, col2, ..., valueN, rowN, colN]
+	for(int A_val = 0; A_val < A_size; A_val += 3){
+		for(int B_val = 0; B_val < B_size; B_val += 3){
+			if(d_a[A_val + 2] == d_b[B_val + 1]){
+				d_c[d] = d_a[A_val] * d_b[B_val]; //This is the 
+				d_c[d + 1] = d_a[A_val + 1]; //This is the row of A // this used to be just: A_val + 1
+				d_c[d + 2] = d_b[B_val + 2]; //This is the col of B // used to be just: B_val + 2
+				d = d + 3;
+				
+/* 
+				printf("d_c[val] = %.0lf\n", d_c[d]);
+				printf("d_c[row] = %.0lf\n", d_c[d+1]);
+				printf("d_c[col] = %.0lf\n", d_c[d+2]);
+ */
+				
+			}
+		}
+	}
+
+	//for debugging
+/* 
+	for(int u = 0; u<C_size; u+=3)
+	{
+		printf("d_c[val] = %.0lf\n", d_c[u]);
+		printf("d_c[row] = %.0lf\n", d_c[u+1]);
+		printf("d_c[col] = %.0lf\n", d_c[u+2]);
+		
+	}
+ */
+	
 }
 
 int main(int argc, char** argv) {
 	
 	if (argc < 2) {
-		fprintf(stderr, "Usage: avg num_elements_per_proc\n");
+		fprintf(stderr, "Usage: Not enough input files. Add A.in, B.in, C.in, or D.in (need 2 files)\n");
 		return -1;
 	}
 	
 	float * matA = initializeMatrix(ROWS, COLS);
-	float * matA2 = initializeMatrix(ROWS, COLS);
-	float * matB = initializeMatrix(ROWS, COLS);
-	float * matBt = initializeMatrix(ROWS, COLS);
-	float * matB2 = initializeMatrix(ROWS, COLS);
-	float * matC = initializeMatrix(ROWS, COLS);
-	
-	float size = (N*N) * sizeof(float);
+	float * matB = initializeMatrix(ROWS, COLS);	
 	
 	double t0, t1;
 	
 	matA = readfile(argv[1],ROWS,COLS);
 	matB = readfile(argv[2],ROWS,COLS);
-	
-	int first = 0, ifnum=0, LOC_num = 0;
-	
-	matBt[0] = matB[0];
-		for(int q = 1; q < N*N; q++)
-		{
-			LOC_num = (LOC_num + N)%(N*N);		
-			if(LOC_num == ifnum && first!=0)
-			{
-				LOC_num++;
-				ifnum++;
-			}
-
-			matBt[LOC_num] = matB[q];
-			first = 1;
-			//printf("%d\n",LOC_num); //for debugging - shows the output
-		}
-	
-	int s = 0, f = 0;
-	//save value and position of nonzero elements	
-	for(int q = 0; q<N; q++)
+	/*
+	//for debugging
+	for(int u = 0; u<N*N; u++)
 	{
-		for(int w = 0; w<N; w++)
-		{
+		printf("matA[val] = %.0lf\n", matA[u]);
+		//printf("matA[row] = %.0lf\n", matA[u+1]);
+		//printf("matA[col] = %.0lf\n", matA[u+2]);
+	}
 	
+	for(int u = 0; u<N*N; u++)
+	{
+		printf("matB[col] = %.0lf\n", matB[u]);
+		//printf("matB[row] = %.0lf\n", matB[u+1]);
+		//printf("matB[col] = %.0lf\n", matB[u+2]);
+	}
+	*/
+	int A_size, B_size, C_size;
+	A_size = 0;
+	B_size = 0;
+	C_size = 0;
+	for(int q = 0; q<N*N; q++){
+
 			if(matA[q] != 0)
-			{
-				matA2[s][0] = q;
-				matA2[s][1] = w;
-				matA2[s][2] = matA[q];
-				s++;
+				A_size ++;
+		
+			if(matB[q] != 0)
+				B_size ++;
+	}	
+	
+// 	printf("MatA is: \n");
+// 	for(int y = 0; y < N*N; y++){
+// 		printf("%lf ", matA[y]);
+// 	}
+// 	printf("\nMatB is: \n");
+// 	for(int z = 0; z < N*N; z++){
+// 		printf("%lf ", matB[z]);
+// 	}
+
+	
+	//int a_size = (A_size) * sizeof(int);
+	//int b_size = (B_size) * sizeof(int);
+	
+	//printf("a_size = %d\n", A_size);
+	//printf("b_size = %d\n", B_size);
+	
+	if(A_size > B_size)
+		C_size = A_size;
+	else
+		C_size = B_size;
+	
+	A_size *= 3;
+	B_size *= 3;
+	C_size *= 3;
+	
+	float matA2[A_size];
+	float matB2[B_size];
+	float matC[C_size];
+	float row = 0;
+	float col = 0;
+	int s = 0, f = 0, p = 0;
+	
+	for(int p = 0; p<5, p++)
+	{
+	for(int a = 0; a < 4096; a++){
+		col = 0;
+		for(int b = 0; b < N; b++){
+			if(matA[a * N + b] != 0){
+				matA2[s] = matA[a*N + b];
+				matA2[s + 1] = row;
+				matA2[s + 2] = col;
+				s = s + 3;
 			}
 		
-			if(matBt[q] != 0)
-			{
-				matB2[f][0] = q;
-				matB2[f][1] = w;
-				matB2[f][2] = matBt[q];
-				f++;
+			if(matB[a * N + b] != 0){
+				matB2[f] = matB[a*N + b]; 				
+				matB2[f + 1] = row;
+				matB2[f + 2] = col;
+				f = f + 3;
 			}
+			col++;
 		}
-	}	
+		row++;
+	}
+	}
+	
+	/*//for debugging
+	for(int u = 0; u<A_size*3; u+=3)
+	{
+		printf("matA2[val] = %.0lf\n", matA2[u]);
+		printf("matA2[row] = %.0lf\n", matA2[u+1]);
+		printf("matA2[col] = %.0lf\n", matA2[u+2]);
+	}
+	
+	for(int u = 0; u<B_size*3; u+=3)
+	{
+		printf("matB2[val] = %.0lf\n", matB2[u]);
+		printf("matB2[row] = %.0lf\n", matB2[u+1]);
+		printf("matB2[col] = %.0lf\n", matB2[u+2]);
+	}
+	*/
+	
 
     /*-----------------------//
 	//						 //
@@ -172,18 +262,24 @@ int main(int argc, char** argv) {
 	
 	//int size = (N*N) * sizeof(int);
 	
-	cudaMalloc(&d_a, size);
-	cudaMalloc(&d_b, size);
-	cudaMalloc(&d_c, size);
-	cudaMemcpy(d_a, matA2, size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_b, matB2, size, cudaMemcpyHostToDevice);
+	int sizeA = A_size * sizeof(float);
+	int sizeB = B_size * sizeof(float);
+	int sizeC = C_size * sizeof(float);
+	
+	cudaMalloc(&d_a, sizeA);
+	cudaMalloc(&d_b, sizeB);
+	cudaMalloc(&d_c, sizeC);
+	//cudaMalloc(&as, a_size);
+	//cudaMalloc(&bs, b_size);
+	cudaMemcpy(d_a, matA2, sizeA, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_b, matB2, sizeB, cudaMemcpyHostToDevice);
 	
 	//int gridSize = (int)ceil(N/1024);
 	
-	deviceMat<<<20,1024>>>(d_a, d_b, d_c, N);
+	deviceMat<<<8,32>>>(d_a, d_b, d_c, A_size, B_size, C_size);
 	
 	cudaDeviceSynchronize();
-	cudaMemcpy(matC, d_c, size, cudaMemcpyDeviceToHost);
+	cudaMemcpy(matC, d_c, sizeC, cudaMemcpyDeviceToHost);
 	
 	
 	cudaError_t syncErr, asyncErr;
@@ -206,23 +302,29 @@ int main(int argc, char** argv) {
 		//printf("The mat-mat product is: %lf \n", matC[h]); //for debugging - shows the value of the matrix product
 	//}
 	
-	long MB = 0;
+	//long MB = 0;
 	
 	printf("Matrix-Matrix Product Time = %lf\n", t1);
 	//flops = 2 * N * N * N;
-	MB = 8 * ROWS * COLS / pow(10,6);
+	//MB = 8 * ROWS * COLS / pow(10,6);
  	//printf("This is %lf FLOPS\n", flops/t1);
-	printf("load speed: %lf MB/s\n", MB/t1);
+	//printf("load speed: %lf MB/s\n", MB/t1);
+	
+	//int count = 0;
+	//printf("The output of C is: \n");
+	//for(int c = 0; c < 9; c = c + 3){
+		//printf("%.0lf %.0lf %.0lf \n", matC[c], matC[c+1], matC[c+2]);
+		//count++;
+	//}
+	//printf("Count: %d\n\n", count);
+	
 	
 	cudaFree(d_a);
 	cudaFree(d_b);
 	cudaFree(d_c);
 	free(matA);
-	free(matA2);
 	free(matB);
-	free(matBt);
-	free(matB2);
-	free(matC);
+
 	
 	return 0;
 }
