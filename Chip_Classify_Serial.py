@@ -13,12 +13,12 @@ from numpy import squeeze
 from numpy import transpose
 from numpy import apply_along_axis
 from numpy import multiply
-from numpy import isnan
-from numpy import mean
-from numpy import std
+from numpy import isnan as npisnan
+from numpy import nanmean as npmean
+from numpy import nanstd as npstd
 from numpy import int8
 from numpy import random
-from numpy import nonzero
+from numpy import nonzero as npnonzero
 from numpy import save
 from numpy import savez
 from numpy import concatenate
@@ -166,8 +166,8 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 		for j in range(0, NumberOfBands):
 			#Mean = MaskedClusterAllBands(:,:,j)
 			Temp = MaskedClusterAllBands[:, :, j]
-			TempNonZero = Temp[nonzero(Temp)]
-			TempNonzeronan = TempNonZero[~isnan(TempNonZero)]
+			TempNonZero = Temp[npnonzero(Temp)]
+			TempNonzeronan = TempNonZero[~npisnan(TempNonZero)]
 			#TempNonan = Temp[!np.isnan(Temp)]
 			with warnings.catch_warnings():
 				warnings.filterwarnings('error')

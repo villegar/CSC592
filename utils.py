@@ -30,7 +30,7 @@ def ind2sub(array_shape, ind):
 def load(filename):
     existingShelf = shelve.open(filename)
     for key in existingShelf:
-        globals()[key]=existingShelf[key]
+        os.environ[key]=existingShelf[key]
     existingShelf.close()
     # Reference: https://stackoverflow.com/questions/2960864/how-can-i-save-all-the-variables-in-the-current-python-session
 
@@ -49,7 +49,7 @@ def save(filename, variables):
         variables = [variables]
     for key in variables:
         try:
-            newShelf[key] = globals()[key]
+            newShelf[key] = os.environ[key]
         except TypeError:
             #
             # __builtins__, newShelf, and imported modules can not be shelved.

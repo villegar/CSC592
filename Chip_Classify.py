@@ -165,7 +165,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 
 	TaskIDs = list()
 	tic = time.time()
-	ImageRow = 100
+	#ImageRow = 100
 	for j in range(0,ImageRow):
 		#display(num2str(100*j/ImageRow))
 		if(j % 10 == 0):
@@ -249,7 +249,7 @@ def Chip_Classify(ImageLocation,SaveLocation,ImageFile,NumberOfClusters,InitialC
 	tic = time.time()
 	print("Starting Cluster Summary computation\n")
 	TaskIDs = list()
-	kValues = linspace(0,ImageColumn,100, dtype=int8)
+	kValues = linspace(0,ImageColumn,2, dtype=int8)
 	for i in range(0, NumberOfClusters):
 		Temp = Cluster[:, :, i]
 		Temp[Temp == i] = 1

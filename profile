@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-bash $@ -m cProfile
+time bash $@ -m cProfile
